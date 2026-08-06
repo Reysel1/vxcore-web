@@ -1,7 +1,7 @@
-import { Star } from "lucide-react";
+import { Quote, Star } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Reveal } from "@/components/site/reveal";
+import { SectionHeading } from "@/components/site/section-heading";
 
 const TESTIMONIALS = [
   {
@@ -52,7 +52,10 @@ function Stars() {
   return (
     <div className="flex gap-0.5 text-amber-500">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className="size-3.5 fill-current" />
+        <Star
+          key={i}
+          className="size-3.5 fill-current drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+        />
       ))}
     </div>
   );
@@ -60,42 +63,49 @@ function Stars() {
 
 export function Testimonials() {
   return (
-    <section className="border-y border-border/60 bg-muted/30 py-24 sm:py-32">
+    <section className="relative border-y border-border/60 bg-muted/30 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <Reveal>
-            <p className="text-xs font-medium uppercase tracking-widest text-violet-600 dark:text-violet-400">
-              Testimonios
-            </p>
-            <h2 className="mt-3 text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-              La gente que mantiene servidores nos entiende
-            </h2>
-          </Reveal>
-        </div>
+        <SectionHeading
+          eyebrow="Testimonios"
+          title={
+            <>
+              La gente que mantiene servidores{" "}
+              <span className="text-gradient">nos entiende</span>
+            </>
+          }
+        />
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {TESTIMONIALS.map((t, i) => (
-            <Reveal key={t.name} delay={(i % 3) * 90}>
-              <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/30">
-                <CardContent className="flex h-full flex-col gap-4">
-                  <Stars />
-                  <p className="flex-1 text-sm leading-relaxed text-foreground/90">
-                    “{t.quote}”
-                  </p>
-                  <div className="flex items-center gap-3 border-t border-border pt-4">
-                    <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-xs font-medium text-white">
+          {TESTIMONIALS.map((t) => (
+            <Card
+              key={t.name}
+              className="group relative h-full overflow-hidden transition-colors duration-300 hover:ring-foreground/20"
+            >
+              <Quote
+                aria-hidden
+                className="pointer-events-none absolute -right-2 -top-2 size-20 rotate-12 text-foreground/[0.06] transition-colors duration-500 group-hover:text-foreground/10"
+              />
+
+              <CardContent className="relative flex h-full flex-col gap-4">
+                <Stars />
+                <p className="flex-1 text-sm leading-relaxed text-foreground/90">
+                  “{t.quote}”
+                </p>
+                <div className="flex items-center gap-3 border-t border-border pt-4">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-muted text-foreground ring-1 ring-inset ring-border">
+                    <span className="flex size-full items-center justify-center rounded-full text-[11px] font-semibold">
                       {t.initials}
                     </span>
-                    <div>
-                      <div className="text-sm font-medium">{t.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {t.role}
-                      </div>
+                  </span>
+                  <div>
+                    <div className="text-sm font-medium">{t.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t.role}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </Reveal>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

@@ -1,10 +1,15 @@
+import { BookOpen, MessageCircle } from "lucide-react";
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Reveal } from "@/components/site/reveal";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SectionHeading } from "@/components/site/section-heading";
+import { URANTIX_STORE_URL } from "@/lib/site";
 
 const FAQS = [
   {
@@ -35,28 +40,67 @@ const FAQS = [
 
 export function Faq() {
   return (
-    <section id="faq" className="scroll-mt-24 border-t border-border/60 bg-muted/30 py-24 sm:py-32">
-      <div className="mx-auto max-w-3xl px-5 sm:px-8">
-        <div className="text-center">
-          <Reveal>
-            <p className="text-xs font-medium uppercase tracking-widest text-violet-600 dark:text-violet-400">
-              FAQ
-            </p>
-            <h2 className="mt-3 text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-              Preguntas, respondidas
-            </h2>
-          </Reveal>
-        </div>
+    <section
+      id="faq"
+      className="relative scroll-mt-24 border-t border-border/60 bg-muted/30 py-24 sm:py-32"
+    >
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.4fr] lg:gap-16">
+          {/* Columna izquierda: cabecera + soporte */}
+          <div>
+            <SectionHeading
+              align="left"
+              eyebrow="FAQ"
+              title={
+                <>
+                  Preguntas,{" "}
+                  <span className="text-gradient">respondidas</span>
+                </>
+              }
+              description="Todo lo que necesitas saber antes de conectar tu servidor. ¿No encuentras tu respuesta? Habla directamente con el equipo."
+            />
 
-        <Reveal delay={120}>
-          <Accordion type="single" collapsible className="mt-10 gap-1">
+            <Card className="mt-10 overflow-hidden">
+              <div className="p-6">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-foreground text-background">
+                  <MessageCircle className="size-5" />
+                </span>
+                <h3 className="mt-4 font-heading text-lg font-semibold">
+                  ¿Tienes más dudas?
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  Nuestro equipo responde en menos de 2 horas en el Discord
+                  oficial de Urantix. También tienes la documentación completa.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button className="gap-2">
+                    <MessageCircle className="size-4" />
+                    Unirme al Discord
+                  </Button>
+                  <Button asChild variant="outline" className="gap-2">
+                    <a
+                      href={URANTIX_STORE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <BookOpen className="size-4" />
+                      Documentación
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Columna derecha: acordeón */}
+          <Accordion type="single" collapsible className="gap-1">
             {FAQS.map((faq, i) => (
               <AccordionItem
                 key={faq.q}
                 value={`item-${i}`}
-                className="rounded-xl border-border bg-card px-5 not-last:mb-2 [&[data-state=open]]:border-border"
+                className="group rounded-xl border border-border bg-card px-5 transition-colors not-last:mb-2 hover:border-foreground/20 data-open:border-foreground/30"
               >
-                <AccordionTrigger className="text-base font-medium">
+                <AccordionTrigger className="gap-3 py-4 text-base font-medium transition-colors hover:no-underline group-data-open:[&_[data-slot=accordion-trigger-icon]]:text-foreground">
                   {faq.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
@@ -65,7 +109,7 @@ export function Faq() {
               </AccordionItem>
             ))}
           </Accordion>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

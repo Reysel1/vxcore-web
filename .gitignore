@@ -39,6 +39,9 @@ yarn-error.log*
 # freebuff app local data
 .freebuff/
 
+# base de datos e instaladores (datos de producción)
+/data
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

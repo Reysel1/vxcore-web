@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Reveal } from "@/components/site/reveal";
+import { SectionHeading } from "@/components/site/section-heading";
 import { cn } from "@/lib/utils";
 
 const PLANS = [
@@ -61,24 +61,22 @@ export function Pricing() {
   const [annual, setAnnual] = React.useState(true);
 
   return (
-    <section id="pricing" className="scroll-mt-24 py-24 sm:py-32">
+    <section id="pricing" className="relative scroll-mt-24 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <Reveal>
-            <p className="text-xs font-medium uppercase tracking-widest text-violet-600 dark:text-violet-400">
-              Precios
-            </p>
-            <h2 className="mt-3 text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-              Precios simples para tu servidor
-            </h2>
-            <p className="mt-4 text-pretty text-muted-foreground">
-              Empieza gratis y actualiza cuando lo necesites. Sin costes
-              ocultos, cancela cuando quieras.
-            </p>
-          </Reveal>
+        <SectionHeading
+          eyebrow="Precios"
+          title={
+            <>
+              Precios simples para{" "}
+              <span className="text-gradient">tu servidor</span>
+            </>
+          }
+          description="Empieza gratis y actualiza cuando lo necesites. Sin costes ocultos, cancela cuando quieras."
+        />
 
-          <Reveal delay={100}>
-            <div className="mt-7 inline-flex items-center gap-3">
+        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Reveal>
+            <div className="inline-flex items-center gap-3 rounded-full border border-border bg-background/70 px-4 py-2 shadow-sm backdrop-blur-sm dark:bg-white/[0.03]">
               <span
                 className={cn(
                   "text-sm transition-colors",
@@ -100,12 +98,9 @@ export function Pricing() {
               >
                 Anual
               </span>
-              <Badge
-                variant="secondary"
-                className="ml-1 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400"
-              >
-                Ahorra 20%
-              </Badge>
+              <span className="text-xs font-medium text-muted-foreground">
+                ahorra 20%
+              </span>
             </div>
           </Reveal>
         </div>
@@ -117,17 +112,16 @@ export function Pricing() {
               <Reveal key={plan.name} delay={i * 100} className="h-full">
                 <Card
                   className={cn(
-                    "relative flex h-full flex-col transition-all duration-300 hover:-translate-y-1",
+                    "group relative flex h-full flex-col overflow-hidden transition-colors duration-300",
                     plan.popular
-                      ? "border-violet-500/40 bg-gradient-to-b from-violet-500/[0.06] to-transparent shadow-xl shadow-violet-500/10 lg:scale-[1.03]"
-                      : "hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/30"
+                      ? "border-foreground/30 bg-foreground/[0.03] ring-foreground/10 lg:scale-[1.03]"
+                      : "hover:ring-foreground/20"
                   )}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-primary-foreground">
-                      El más popular
-                    </Badge>
+                    <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-foreground/40 to-transparent" />
                   )}
+
                   <CardContent className="flex h-full flex-col gap-6 p-6">
                     <div>
                       <h3 className="font-heading text-lg font-semibold">
@@ -158,7 +152,7 @@ export function Pricing() {
                     <ul className="flex flex-1 flex-col gap-2.5">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-2.5 text-sm">
-                          <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                          <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-foreground">
                             <Check className="size-3" />
                           </span>
                           {feature}
@@ -168,14 +162,10 @@ export function Pricing() {
 
                     <Button
                       variant={plan.popular ? "default" : "outline"}
-                      className={cn(
-                        "group h-10 w-full gap-2",
-                        plan.popular &&
-                          "bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-500 hover:to-fuchsia-500"
-                      )}
+                      className={cn("group/btn h-10 w-full gap-2")}
                     >
                       {plan.cta}
-                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
                     </Button>
                   </CardContent>
                 </Card>
@@ -185,7 +175,8 @@ export function Pricing() {
         </div>
 
         <Reveal delay={200}>
-          <p className="mt-10 text-center text-sm text-muted-foreground">
+          <p className="mt-10 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+            <ShieldCheck className="size-4 text-foreground/50" />
             Todos los planes incluyen cifrado de extremo a extremo y soporte
             real de la gente que construye VXCore.
           </p>

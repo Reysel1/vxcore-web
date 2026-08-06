@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -17,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VXCore — Build, ship and scale",
+  title: "VXCore — El sistema operativo de tu servidor FXServer",
   description:
-    "VXCore is the all-in-one workspace for modern product teams. Plan, build, automate and analyze — in one beautiful place.",
+    "VXCore une servidores, recursos, logs y automatizaciones en un solo panel — con un agente de IA que monitoriza, edita y responde a tu servidor en tiempo real.",
 };
 
 export default function RootLayout({
@@ -27,20 +28,22 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="min-h-dvh bg-background font-sans text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster position="top-center" richColors />
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster position="top-center" richColors />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

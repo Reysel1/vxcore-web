@@ -7,6 +7,7 @@ import { Stats } from "@/components/site/stats";
 import { Testimonials } from "@/components/site/testimonials";
 import { Pricing } from "@/components/site/pricing";
 import { Faq } from "@/components/site/faq";
+import { Contact } from "@/components/site/contact";
 import { Cta } from "@/components/site/cta";
 import { Footer } from "@/components/site/footer";
 
@@ -23,6 +24,7 @@ export default function Home() {
         <Testimonials />
         <Pricing />
         <Faq />
+        <Contact />
         <Cta />
       </main>
       <Footer />

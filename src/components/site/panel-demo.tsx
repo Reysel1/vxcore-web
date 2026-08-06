@@ -1,6 +1,13 @@
 "use client";
 
-import { Activity, FileCode2, Radio } from "lucide-react";
+import {
+  Activity,
+  Database,
+  FileCode2,
+  Radio,
+  Server,
+  Workflow,
+} from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 
@@ -11,22 +18,55 @@ const VIEWS = [
     id: "console",
     label: "Consola RCON",
     Icon: Radio,
-    file: "/panel/console.png",
-    alt: "VXCore panel — Consola RCON Interactiva con salida en vivo del servidor FXServer",
+    file: "/panel/consola.png",
+    w: 1158,
+    h: 863,
+    alt: "VXCore panel — Consola RCON interactiva con salida en vivo del servidor FXServer",
   },
   {
-    id: "logs",
-    label: "Logs Globales",
-    Icon: Activity,
-    file: "/panel/logs.png",
-    alt: "VXCore panel — Logs Globales del servidor con filtros por nivel y recurso",
+    id: "servers",
+    label: "Servidores",
+    Icon: Server,
+    file: "/panel/servers.png",
+    w: 1249,
+    h: 930,
+    alt: "VXCore panel — Lista de servidores conectados con estado y métricas",
+  },
+  {
+    id: "database",
+    label: "Base de Datos",
+    Icon: Database,
+    file: "/panel/db.png",
+    w: 1647,
+    h: 995,
+    alt: "VXCore panel — Base de datos del servidor con tablas y consultas",
   },
   {
     id: "editor",
-    label: "Editor",
+    label: "Editor IA",
     Icon: FileCode2,
-    file: "/panel/editor.png",
-    alt: "VXCore panel — Editor de recursos con agente IA integrado",
+    file: "/panel/editorai.png",
+    w: 1658,
+    h: 1005,
+    alt: "VXCore panel — Editor de recursos con el agente de IA integrado",
+  },
+  {
+    id: "events",
+    label: "Eventos",
+    Icon: Activity,
+    file: "/panel/eventspt1.png",
+    w: 1920,
+    h: 1040,
+    alt: "VXCore panel — Eventos del servidor con métricas en tiempo real",
+  },
+  {
+    id: "automations",
+    label: "Automatizaciones",
+    Icon: Workflow,
+    file: "/panel/trello.png",
+    w: 1920,
+    h: 1042,
+    alt: "VXCore panel — Tablero de automatizaciones y planificación",
   },
 ];
 
@@ -39,7 +79,7 @@ export function PanelDemo() {
       {/* Glow */}
       <div
         aria-hidden
-        className="absolute -inset-x-10 -top-12 -bottom-10 -z-10 bg-gradient-to-tr from-violet-600/30 via-violet-500/20 to-fuchsia-500/20 blur-3xl"
+        className="absolute -inset-x-10 -top-12 -bottom-10 -z-10 bg-foreground/[0.05] blur-3xl"
       />
 
       <div className="group/frame relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/10 ring-1 ring-white/5 dark:shadow-black/50">
@@ -87,13 +127,11 @@ export function PanelDemo() {
           id="panel-view"
           role="tabpanel"
           aria-labelledby={`tab-${view.id}`}
-          className="relative aspect-[1919/1043] w-full overflow-hidden bg-[#0d0d13]"
+          className="relative w-full overflow-hidden bg-[#0d0d13] transition-[aspect-ratio] duration-500 ease-out"
+          style={{ aspectRatio: `${view.w} / ${view.h}` }}
         >
           {/* Sheen sweep over the screenshot only */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-10"
-          >
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
             <div className="absolute -inset-y-10 -left-1/2 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent transition-transform duration-1000 group-hover/frame:translate-x-[420%]" />
           </div>
           {VIEWS.map(({ id, file, alt }) => (

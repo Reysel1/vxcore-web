@@ -65,8 +65,23 @@ function SocialIcon({ name }: { name: "github" | "x" | "linkedin" | "youtube" })
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/60 bg-muted/30">
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+    <footer className="relative overflow-hidden border-t border-border/60 bg-muted/30">
+      {/* Top hairline */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent"
+      />
+      {/* Giant watermark */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 select-none overflow-hidden"
+      >
+        <div className="text-gradient mx-auto w-fit translate-y-8 text-[clamp(6rem,18vw,16rem)] font-heading font-semibold leading-none tracking-tight opacity-[0.05]">
+          VXCore
+        </div>
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_2fr]">
           <div>
             <Logo />
@@ -79,7 +94,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Visita la tienda de Urantix (se abre en una pestaña nueva)"
-              className="group mt-5 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-violet-600 transition-colors hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-300"
+              className="group mt-5 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               Visita la tienda de Urantix
               <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -92,7 +107,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={name}
-                  className="flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:text-foreground"
+                  className="flex size-9 items-center justify-center rounded-lg border border-border bg-background/50 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground dark:bg-white/[0.03]"
                 >
                   <SocialIcon name={name} />
                 </a>
@@ -126,8 +141,9 @@ export function Footer() {
             © {new Date().getFullYear()} VXCore · Un producto de Urantix. Todos
             los derechos reservados.
           </p>
-          <p className="text-xs text-muted-foreground">
-            Hecho con ❤️ para la comunidad FiveM
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            Hecho con <span className="text-rose-500">❤️</span> para la
+            comunidad FiveM
           </p>
         </div>
       </div>

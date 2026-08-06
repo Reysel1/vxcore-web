@@ -1,6 +1,5 @@
 import { ArrowRight, Play } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PanelDemo } from "@/components/site/panel-demo";
 import { Reveal } from "@/components/site/reveal";
@@ -15,21 +14,11 @@ export function Hero() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[480px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-violet-600/25 via-violet-500/15 to-fuchsia-500/20 blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[480px] w-[820px] -translate-x-1/2 rounded-full bg-foreground/[0.05] blur-3xl"
       />
 
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
-        <Reveal>
-          <Badge
-            variant="outline"
-            className="mb-6 h-7 gap-2 rounded-full border-border px-3 text-xs font-medium"
-          >
-            <span className="size-1.5 rounded-full bg-violet-500" />
-            VXCore 2.0 · El sistema operativo de tu servidor FXServer
-          </Badge>
-        </Reveal>
-
-        <Reveal delay={80}>
+        <Reveal delay={0}>
           <h1 className="mx-auto max-w-3xl text-balance font-heading text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
             Controla tu servidor FiveM desde{" "}
             <span className="text-gradient">un único núcleo</span>

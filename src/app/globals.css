@@ -128,7 +128,7 @@
     @apply scroll-smooth font-sans antialiased;
   }
   ::selection {
-    background: oklch(0.622 0.214 259.815 / 0.25);
+    background: oklch(0.708 0 0 / 0.3);
   }
 }
 
@@ -137,9 +137,8 @@
 @utility text-gradient {
   background: linear-gradient(
     120deg,
-    oklch(0.606 0.25 292.717) 0%,
-    oklch(0.545 0.245 262.881) 55%,
-    oklch(0.491 0.309 271.116) 100%
+    var(--foreground) 0%,
+    var(--muted-foreground) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
