@@ -32,6 +32,7 @@ import { StaffChat } from "@/components/dashboard/chat";
 import {
   ensureUser,
   getActiveLicense,
+  getDbError,
   getLatestInstaller,
   getUserLicense,
   hasDownloadAccess,
@@ -79,6 +80,7 @@ export default async function DashboardPage() {
     provider: session.user.provider,
   });
 
+  const dbError = getDbError();
   const paid = hasPaid(email);
   const access = hasDownloadAccess(email);
   const license = getActiveLicense(email);
@@ -125,6 +127,18 @@ export default async function DashboardPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+        {dbError && (
+          <div
+            role="alert"
+            className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3.5 text-sm text-amber-700 dark:text-amber-300"
+          >
+            <span className="font-semibold">Base de datos no configurada.</span>{" "}
+            El panel se muestra con datos vacíos y las compras no se pueden
+            registrar. En producción (Vercel) configura{" "}
+            <code className="font-mono text-xs">TURSO_DATABASE_URL</code> y{" "}
+            <code className="font-mono text-xs">TURSO_AUTH_TOKEN</code>.
+          </div>
+        )}
         <div className="mb-8">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">
             Tu panel

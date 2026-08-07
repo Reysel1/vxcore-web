@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VXCore Web
 
-## Getting Started
+Web pública de VXCore: landing, login con Google/Discord, panel de usuario
+(`/dashboard`), pago con Stripe, descarga del instalador y chat con el staff.
 
-First, run the development server:
+El proyecto **no depende de ninguna ruta local**: toda la configuración va por
+variables de entorno (ver `.env.example`).
+
+---
+
+## Arquitectura de datos
+
+VXCore comparte **una sola base de datos** entre la web y el panel admin.
+
+| Modo | Dónde viven los datos | Para qué sirve |
+| --- | --- | --- |
+| **Local** (por defecto) | Fichero SQLite `data/vxcore.db` (o `VXCORE_DATA_DIR`) | Desarrollo en tu máquina |
+| **Nube / Turso** (`TURSO_DATABASE_URL`) | SQLite en la nube (turso.tech) | Producción en Vercel |
+
+> En **Vercel el disco es efímero y de solo lectura**: si no defines
+> `TURSO_DATABASE_URL`, la app degrada a una base en memoria y el panel muestra
+> un aviso (nada se guarda). Configura Turso y la web funciona para todo el
+> mundo, sin ficheros ni rutas de ninguna máquina concreta.
+
+Los **instaladores** (`/dashboard` → Descargar) son ficheros `.exe` que viven en
+la máquina local donde se gestionan: se publican desde el panel admin local y
+se sirven desde `data/installers/`. En Vercel esa descarga devuelve un mensaje
+claro — para servir instaladores desde la nube haría falta almacenamiento de
+objetos (S3/R2), aún no implementado.
+
+---
+
+## Arrancar en local
 
 ```bash
+npm install
+cp .env.example .env    # rellena los valores (o deja los de OAuth vacíos)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Abre http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La base de datos se crea sola en `data/vxcore.db`. Para que el **panel admin**
+(proyecto `VXCore Admin`) comparta esos datos, apunta su `VXCORE_DATA_DIR` a
+esta misma carpeta `data`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+VXCORE_DATA_DIR=C:\ruta\a\VXCore Web\data
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desplegar en Vercel (para que funcione para todos)
 
-## Learn More
+1. Sube el repo a GitHub y conéctalo en [vercel.com/new](https://vercel.com/new)
+   (framework: **Next.js**, se detecta solo).
+2. Crea una base gratis en [turso.tech](https://turso.tech):
+   ```bash
+   npm i -g turso
+   turso auth login
+   turso db create vxcore
+   turso db show vxcore --url        # → TURSO_DATABASE_URL
+   turso db tokens create vxcore     # → TURSO_AUTH_TOKEN
+   ```
+3. En Vercel (Settings → Environment Variables) añade **todas** las del
+   `.env.example`, con los valores de producción:
+   `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_DISCORD_ID/SECRET`,
+   `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`,
+   `NEXT_PUBLIC_APP_URL=https://tu-dominio.com`, `TURSO_DATABASE_URL`,
+   `TURSO_AUTH_TOKEN`.
+4. Configura en los proveedores OAuth la URL de callback de tu dominio
+   (`https://tu-dominio.com/api/auth/callback/google` y `/discord`).
+5. Configura el webhook de Stripe hacia `https://tu-dominio.com/api/webhooks/stripe`.
+6. Deploy. La web queda funcional para cualquiera, sin depender de ninguna
+   máquina local.
 
-To learn more about Next.js, take a look at the following resources:
+> ⚠️ El **panel admin** (VXCore Admin) debe usar la **misma base Turso**
+> (mismas `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN`) para que web y admin vean
+> los mismos usuarios, pedidos y licencias.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Variables de entorno
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Todas están documentadas en `.env.example` con instrucciones. Las más
+importantes:
 
-## Deploy on Vercel
+| Variable | Qué es |
+| --- | --- |
+| `AUTH_SECRET` | Firma las sesiones (genera: `openssl rand -base64 32`) |
+| `AUTH_GOOGLE_ID/SECRET`, `AUTH_DISCORD_ID/SECRET` | Login con OAuth |
+| `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` | Pagos |
+| `NEXT_PUBLIC_APP_URL` | URL pública (enlaces de vuelta de Stripe) |
+| `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | Base de datos en la nube (producción) |
+| `VXCORE_DATA_DIR` | **Solo local**: carpeta compartida con el panel admin |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Comando | Qué hace |
+| --- | --- |
+| `npm run dev` | Desarrollo en http://localhost:3000 |
+| `npm run build` | Compila el proyecto |
+| `npm run start` | Sirve el build en producción |
+| `npm run lint` | ESLint |

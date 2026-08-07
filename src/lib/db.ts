@@ -1,14 +1,53 @@
 import { DatabaseSync } from "node:sqlite";
+import LibsqlDatabase from "libsql";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 
 /**
  * Base de datos compartida de VXCore.
- * - Fichero SQLite en `<raíz de la web>/data/vxcore.db` (o `VXCORE_DATA_DIR`).
- * - El panel admin apunta al mismo fichero para gestionar lo mismo.
- * - Modo WAL: permite que web y admin lean/escriban a la vez.
+ *
+ * Dos modos (mismo esquema, mismo SQL):
+ * - LOCAL (por defecto): SQLite en `<raíz de la web>/data/vxcore.db` (o
+ *   `VXCORE_DATA_DIR`). El panel admin apunta al mismo fichero.
+ * - REMOTO (Vercel / nube): si existe `TURSO_DATABASE_URL` usa Turso/libSQL
+ *   (SQLite en la nube). En Vercel el disco es de solo lectura: sin Turso la
+ *   app degrada a memoria y muestra un aviso, pero NO crashea.
+ *
+ * Modo WAL en local: permite que web y admin lean/escriban a la vez.
  */
+
+type Row = Record<string, unknown>;
+
+type Stmt = {
+  run(...params: unknown[]): { lastInsertRowid: number | bigint };
+  get(...params: unknown[]): Row | undefined;
+  all(...params: unknown[]): Row[];
+};
+
+type Driver = {
+  exec(sql: string): void;
+  prepare(sql: string): Stmt;
+};
+
+/** Error de configuración de la BD, si lo hay (null = todo OK). */
+let dbError: string | null = null;
+
+/**
+ * Mensaje de error de configuración de la BD (null = funciona).
+ * Fuerza la inicialización: en la primera llamada del proceso (p. ej. un
+ * webhook) la BD todavía no se ha creado, y sin esto un fallo de
+ * configuración pasaría desapercibido en la primera petición.
+ */
+export function getDbError(): string | null {
+  getDb();
+  return dbError;
+}
+
+/** ¿Modo remoto (Turso)? Se activa definiendo TURSO_DATABASE_URL. */
+export function isRemote(): boolean {
+  return Boolean(process.env.TURSO_DATABASE_URL);
+}
 
 export function getDataDir(): string {
   return (
@@ -17,89 +56,174 @@ export function getDataDir(): string {
   );
 }
 
-let db: DatabaseSync | null = null;
+const SCHEMA = `
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT,
+    image TEXT,
+    provider TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 
-export function getDb(): DatabaseSync {
-  if (db) return db;
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    user_name TEXT,
+    stripe_session_id TEXT,
+    stripe_customer_id TEXT,
+    payment_intent TEXT,
+    amount_cents INTEGER,
+    currency TEXT DEFAULT 'eur',
+    plan_name TEXT DEFAULT 'Pro',
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    paid_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(user_email);
 
+  CREATE TABLE IF NOT EXISTS licenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    license_key TEXT NOT NULL UNIQUE,
+    user_email TEXT NOT NULL,
+    note TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_licenses_email ON licenses(user_email);
+
+  CREATE TABLE IF NOT EXISTS installers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    version TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL DEFAULT 0,
+    is_latest INTEGER NOT NULL DEFAULT 0,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    sender TEXT NOT NULL DEFAULT 'user',
+    body TEXT NOT NULL,
+    read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_email);
+`;
+
+let db: Driver | null = null;
+
+function makeMemoryDriver(): Driver {
+  const raw = new DatabaseSync(":memory:", {});
+  raw.exec(SCHEMA);
+  return {
+    exec: (sql) => raw.exec(sql),
+    prepare: (sql) => raw.prepare(sql) as unknown as Stmt,
+  };
+}
+
+/** El driver nativo de libsql añade `_metadata` a cada fila; la limpiamos. */
+function stripMeta(row: Row | undefined): Row | undefined {
+  if (row && "_metadata" in row) {
+    const rest: Row = { ...row };
+    delete rest._metadata;
+    return rest;
+  }
+  return row;
+}
+
+function makeLocalDriver(): Driver {
   const dir = getDataDir();
   mkdirSync(dir, { recursive: true });
   mkdirSync(path.join(dir, "installers"), { recursive: true });
 
-  db = new DatabaseSync(path.join(dir, "vxcore.db"));
-  db.exec("PRAGMA journal_mode = WAL;");
-  db.exec("PRAGMA busy_timeout = 5000;");
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT NOT NULL UNIQUE,
-      name TEXT,
-      image TEXT,
-      provider TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+  const raw = new DatabaseSync(path.join(dir, "vxcore.db"));
+  raw.exec("PRAGMA journal_mode = WAL;");
+  raw.exec("PRAGMA busy_timeout = 5000;");
+  raw.exec(SCHEMA);
 
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_email TEXT NOT NULL,
-      user_name TEXT,
-      stripe_session_id TEXT,
-      stripe_customer_id TEXT,
-      payment_intent TEXT,
-      amount_cents INTEGER,
-      currency TEXT DEFAULT 'eur',
-      plan_name TEXT DEFAULT 'Pro',
-      status TEXT NOT NULL DEFAULT 'pending',
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      paid_at TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(user_email);
+  return {
+    exec: (sql) => raw.exec(sql),
+    prepare: (sql) => raw.prepare(sql) as unknown as Stmt,
+  };
+}
 
-    CREATE TABLE IF NOT EXISTS licenses (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      license_key TEXT NOT NULL UNIQUE,
-      user_email TEXT NOT NULL,
-      note TEXT,
-      status TEXT NOT NULL DEFAULT 'active',
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE INDEX IF NOT EXISTS idx_licenses_email ON licenses(user_email);
+function makeRemoteDriver(): Driver {
+  const url = process.env.TURSO_DATABASE_URL!;
+  // Para URLs file: (pruebas locales del modo remoto) creamos el directorio
+  // padre del fichero si no existe.
+  if (url.startsWith("file:")) {
+    const filePath = url.replace(/^file:/, "");
+    const dir = path.dirname(filePath);
+    if (dir && dir !== ".") {
+      mkdirSync(dir, { recursive: true });
+    }
+  }
+  // El tipo de libsql no declara authToken aunque el runtime lo acepta.
+  const options = {
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  } as unknown as ConstructorParameters<typeof LibsqlDatabase>[1];
+  const raw = new LibsqlDatabase(url, options);
+  raw.exec(SCHEMA);
 
-    CREATE TABLE IF NOT EXISTS installers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      version TEXT NOT NULL,
-      filename TEXT NOT NULL,
-      size_bytes INTEGER NOT NULL DEFAULT 0,
-      is_latest INTEGER NOT NULL DEFAULT 0,
-      note TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+  return {
+    exec: (sql) => raw.exec(sql),
+    prepare: (sql) => {
+      const stmt = raw.prepare(sql);
+      return {
+        run: (...params) =>
+          stmt.run(...params) as { lastInsertRowid: number | bigint },
+        get: (...params) => stripMeta(stmt.get(...params) as Row | undefined),
+        all: (...params) =>
+          (stmt.all(...params) as Row[]).map((r) => stripMeta(r) ?? r),
+      };
+    },
+  };
+}
 
-    CREATE TABLE IF NOT EXISTS contacts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      subject TEXT NOT NULL,
-      message TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'new',
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_email TEXT NOT NULL,
-      sender TEXT NOT NULL DEFAULT 'user',
-      body TEXT NOT NULL,
-      read INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_email);
-  `);
-
+export function getDb(): Driver {
+  if (db) return db;
+  try {
+    db = isRemote() ? makeRemoteDriver() : makeLocalDriver();
+  } catch (err) {
+    // Nunca crashear: degrada a memoria y expón el error para la UI.
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error desconocido al iniciar la base de datos";
+    console.error("[VXCore] Error al iniciar la base de datos:", err);
+    dbError = message;
+    db = makeMemoryDriver();
+  }
   return db;
 }
 
-type Row = Record<string, unknown>;
+/**
+ * Devuelve el driver si la base de datos funciona, o lanza un error con
+ * instrucciones claras si no (para rutas de mutación que no pueden degradar
+ * silenciosamente).
+ */
+export function requireHealthyDb(): Driver {
+  const error = getDbError();
+  if (error) {
+    throw new Error(
+      `Base de datos no disponible: ${error}. En producción configura TURSO_DATABASE_URL y TURSO_AUTH_TOKEN.`
+    );
+  }
+  return getDb();
+}
 
 /* ------------------------------------------------------------------ */
 /* Usuarios                                                            */

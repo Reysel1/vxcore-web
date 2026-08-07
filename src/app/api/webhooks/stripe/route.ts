@@ -6,6 +6,7 @@ import {
   getActiveLicense,
   getOrderBySessionId,
   markOrderPaid,
+  requireHealthyDb,
 } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
 
@@ -14,6 +15,23 @@ export async function POST(req: NextRequest) {
   if (!secret) {
     return NextResponse.json(
       { error: "STRIPE_WEBHOOK_SECRET no configurada" },
+      { status: 500 }
+    );
+  }
+
+  // Sin base de datos el webhook no puede registrar el pago ni emitir la
+  // licencia. Devolvemos 500 para que Stripe reintente cuando esté arreglado.
+  try {
+    requireHealthyDb();
+  } catch (err) {
+    console.error("[webhook] base de datos no disponible:", err);
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "La base de datos no está disponible.",
+      },
       { status: 500 }
     );
   }

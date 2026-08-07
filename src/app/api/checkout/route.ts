@@ -5,6 +5,7 @@ import {
   createOrder,
   deleteOrder,
   ensureUser,
+  requireHealthyDb,
   updateOrderSession,
 } from "@/lib/db";
 import { getPriceId, getStripe, isStripeConfigured } from "@/lib/stripe";
@@ -24,6 +25,22 @@ export async function POST(req: NextRequest) {
           "Stripe aún no está configurado. Falta STRIPE_SECRET_KEY, STRIPE_PRICE_ID o STRIPE_WEBHOOK_SECRET.",
       },
       { status: 500 }
+    );
+  }
+
+  // Si la base de datos no está disponible (p. ej. falta Turso en Vercel),
+  // no dejamos que el pago avance: el pedido no podría registrarse.
+  try {
+    requireHealthyDb();
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "La base de datos no está disponible.",
+      },
+      { status: 503 }
     );
   }
 

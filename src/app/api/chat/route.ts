@@ -5,6 +5,7 @@ import {
   addMessage,
   listMessages,
   markMessagesRead,
+  requireHealthyDb,
 } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -48,6 +49,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "El mensaje no puede superar los 2000 caracteres." },
       { status: 400 }
+    );
+  }
+
+  // Sin base de datos el mensaje se perdería: mejor avisar al usuario.
+  try {
+    requireHealthyDb();
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "La base de datos no está disponible.",
+      },
+      { status: 503 }
     );
   }
 

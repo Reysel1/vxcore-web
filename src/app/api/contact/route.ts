@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { addContact } from "@/lib/db";
+import { addContact, requireHealthyDb } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   let body: {
@@ -37,6 +37,20 @@ export async function POST(req: NextRequest) {
   }
   if (message.length > 4000 || subject.length > 200 || name.length > 120) {
     return NextResponse.json({ error: "Mensaje demasiado largo." }, { status: 400 });
+  }
+
+  try {
+    requireHealthyDb();
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "La base de datos no está disponible.",
+      },
+      { status: 503 }
+    );
   }
 
   addContact({ name, email, subject, message });

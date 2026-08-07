@@ -5,7 +5,12 @@ import path from "node:path";
 import { Readable } from "node:stream";
 
 import { auth } from "@/auth";
-import { getDataDir, getLatestInstaller, hasDownloadAccess } from "@/lib/db";
+import {
+  getDataDir,
+  getLatestInstaller,
+  hasDownloadAccess,
+  isRemote,
+} from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
@@ -29,6 +34,19 @@ export async function GET() {
   if (!installer) {
     return NextResponse.json(
       { error: "Todavía no hay instalador publicado." },
+      { status: 404 }
+    );
+  }
+
+  // En modo remoto (Vercel) el disco no guarda instaladores: los ficheros viven
+  // en la máquina local donde se gestionan. Avisamos con claridad en vez de
+  // devolver un 404 genérico.
+  if (isRemote()) {
+    return NextResponse.json(
+      {
+        error:
+          "Los instaladores se publican desde el servidor local de VXCore. Usa el panel de administración local para subir el .exe.",
+      },
       { status: 404 }
     );
   }
