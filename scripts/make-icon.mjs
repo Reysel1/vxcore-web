@@ -14,7 +14,8 @@ import path from "node:path";
 const SRC =
   process.argv[2] ??
   "C:/Users/nene/Pictures/Vertex/01aa908b-48c9-435d-9471-bf50af6fdee6.png";
-const OUT_DIR = process.argv[3] ?? "src/app";
+// El icono es del panel admin (la web conserva su favicon por defecto).
+const OUT_DIR = process.argv[3] ?? "C:/Users/nene/Desktop/vxcore-admin/src/app";
 const MARGIN = 10; // margen en px alrededor del squircle (escala original)
 
 async function main() {
