@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import {
   addMessage,
   getOpenTicket,
-  getUserTicket,
   listMessages,
   markMessagesRead,
   requireHealthyDb,
@@ -21,16 +20,19 @@ export async function GET(req: NextRequest) {
   // El usuario ya ha visto los mensajes del staff al recibirlos.
   markMessagesRead(email, "staff");
 
+  // ?ticket=<id> limita la conversación a ese ticket (incluye los mensajes
+  // legacy sin ticket para no perder historial).
+  const ticketId = Number(req.nextUrl.searchParams.get("ticket") ?? 0);
+  let filtered = messages;
+  if (ticketId > 0) {
+    filtered = messages.filter(
+      (m) => Number(m.ticket_id) === ticketId || m.ticket_id == null
+    );
+  }
   const after = Number(req.nextUrl.searchParams.get("after") ?? 0);
-  const filtered = after
-    ? messages.filter((m) => Number(m.id) > after)
-    : messages;
+  if (after) filtered = filtered.filter((m) => Number(m.id) > after);
 
-  // El ticket se devuelve junto a los mensajes para que el chat conozca
-  // el estado (abierto/cerrado/valorado) con una sola petición.
-  const ticket = getUserTicket(email) ?? null;
-
-  return NextResponse.json({ messages: filtered, ticket });
+  return NextResponse.json({ messages: filtered });
 }
 
 export async function POST(req: NextRequest) {
@@ -74,7 +76,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Para escribir hace falta un ticket abierto: el chat va por tickets.
-  if (!getOpenTicket(email)) {
+  const open = getOpenTicket(email);
+  if (!open) {
     return NextResponse.json(
       { error: "Abre un ticket para poder escribir." },
       { status: 400 }
@@ -85,6 +88,7 @@ export async function POST(req: NextRequest) {
     userEmail: email,
     sender: "user",
     body: message,
+    ticketId: Number(open.id),
   });
 
   return NextResponse.json({ message: created });

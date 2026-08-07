@@ -28,7 +28,7 @@ import {
   PaymentStatusToast,
   SignOutButton,
 } from "@/components/dashboard/actions";
-import { StaffChat } from "@/components/dashboard/chat";
+import { UserTickets } from "@/components/dashboard/tickets";
 import {
   ensureUser,
   getActiveLicense,
@@ -358,9 +358,9 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Chat con el staff */}
+        {/* Tickets de soporte */}
         <div className="mt-5">
-          <StaffChat />
+          <UserTickets />
         </div>
       </main>
     </div>

@@ -54,6 +54,7 @@ export function getDbError(): string | null {
 const MIGRATIONS: { table: string; column: string; type: string }[] = [
   { table: "installers", column: "asset_id", type: "INTEGER" },
   { table: "installers", column: "asset_repo", type: "TEXT" },
+  { table: "messages", column: "ticket_id", type: "INTEGER" },
 ];
 
 function migrate(driver: Driver): void {
@@ -148,6 +149,7 @@ const SCHEMA = `
     sender TEXT NOT NULL DEFAULT 'user',
     body TEXT NOT NULL,
     read INTEGER NOT NULL DEFAULT 0,
+    ticket_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_email);
@@ -556,11 +558,14 @@ export function addMessage(input: {
   userEmail: string;
   sender: "user" | "staff";
   body: string;
+  ticketId?: number | null;
 }): Row {
   const db = getDb();
   const info = db
-    .prepare("INSERT INTO messages (user_email, sender, body) VALUES (?, ?, ?)")
-    .run(input.userEmail, input.sender, input.body);
+    .prepare(
+      "INSERT INTO messages (user_email, sender, body, ticket_id) VALUES (?, ?, ?, ?)"
+    )
+    .run(input.userEmail, input.sender, input.body, input.ticketId ?? null);
   return db
     .prepare("SELECT * FROM messages WHERE id = ?")
     .get(Number(info.lastInsertRowid)) as Row;
@@ -673,6 +678,19 @@ export function rateTicket(
       "UPDATE tickets SET rating = ?, rating_comment = ?, rated_at = datetime('now') WHERE id = ?"
     )
     .run(rating, comment, id);
+}
+
+/** Lista de tickets del usuario (abiertos primero) con su último mensaje. */
+export function listTicketsForUser(userEmail: string): Row[] {
+  return getDb()
+    .prepare(
+      `SELECT t.*,
+         (SELECT body FROM messages WHERE user_email = t.user_email ORDER BY id DESC LIMIT 1) AS last_body
+       FROM tickets t
+       WHERE t.user_email = ?
+       ORDER BY CASE WHEN t.status = 'open' THEN 0 ELSE 1 END, t.created_at DESC`
+    )
+    .all(userEmail) as Row[];
 }
 
 /* ------------------------------------------------------------------ */
