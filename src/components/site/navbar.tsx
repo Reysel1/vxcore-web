@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
-import { LoginSheet } from "@/components/site/login-sheet";
+import { LoginDialog } from "@/components/site/login-dialog";
 import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -211,7 +211,7 @@ export function Navbar() {
         </div>
       </nav>
 
-      <LoginSheet open={loginOpen} onOpenChange={setLoginOpen} />
+      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </header>
   );
 }

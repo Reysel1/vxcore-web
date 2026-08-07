@@ -88,11 +88,6 @@ export function PanelDemo() {
           <span className="size-2.5 rounded-full bg-red-400/90" />
           <span className="size-2.5 rounded-full bg-amber-400/90" />
           <span className="size-2.5 rounded-full bg-emerald-400/90" />
-          <div className="mx-auto hidden items-center gap-2 rounded-md bg-muted px-3 py-1 text-xs text-muted-foreground sm:flex">
-            <span className="size-1.5 rounded-full bg-emerald-500" />
-            VXCore
-          </div>
-          <div className="ml-auto w-10 sm:hidden" />
         </div>
 
         {/* View switcher */}

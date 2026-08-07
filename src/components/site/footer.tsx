@@ -1,7 +1,13 @@
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 import { Logo } from "@/components/site/logo";
-import { URANTIX_STORE_URL } from "@/lib/site";
+import {
+  LEGAL_LINKS,
+  SOCIAL_LINKS,
+  URANTIX_STORE_URL,
+  type SocialIconName,
+} from "@/lib/site";
 
 const COLUMNS = [
   {
@@ -16,49 +22,57 @@ const COLUMNS = [
     title: "Recursos",
     links: ["Documentación", "Guías de inicio", "API", "Comunidad", "Estado"],
   },
-  {
-    title: "Legal",
-    links: ["Privacidad", "Términos", "Seguridad", "DPA"],
-  },
 ];
 
-function SocialIcon({ name }: { name: "github" | "x" | "linkedin" | "youtube" }) {
-  const paths: Record<string, React.ReactNode> = {
-    github: (
-      <>
-        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-        <path d="M9 18c-4.51 2-5-2-7-2" />
-      </>
-    ),
-    x: (
-      <path d="M4 4l7.2 9.6L4.4 20h2.2l5.6-5.4L16.8 20H20l-7.5-10L19.3 4h-2.2l-5.1 4.9L8.2 4H4z" />
-    ),
-    linkedin: (
-      <>
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" />
-        <rect x="2" y="9" width="4" height="12" />
-        <circle cx="4" cy="4" r="2" />
-      </>
-    ),
-    youtube: (
-      <>
+/**
+ * Iconos de marca. X y TikTok van rellenos (`fill`) porque sus logos son
+ * siluetas macizas; YouTube e Instagram funcionan mejor trazados.
+ */
+function SocialIcon({ name }: { name: SocialIconName }) {
+  const common = {
+    viewBox: "0 0 24 24",
+    "aria-hidden": true,
+    className: "size-4",
+  } as const;
+
+  if (name === "x") {
+    return (
+      <svg {...common} fill="currentColor">
+        <path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.96 6.82H1.66l7.73-8.83L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.11z" />
+      </svg>
+    );
+  }
+
+  if (name === "tiktok") {
+    return (
+      <svg {...common} fill="currentColor">
+        <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 1 1 .77-5.06V9.7a5.67 5.67 0 0 0-.77-.05A5.65 5.65 0 1 0 15.54 15.3V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.29 4.29 0 0 1-3.24-1.48z" />
+      </svg>
+    );
+  }
+
+  const strokeProps = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  } as const;
+
+  if (name === "youtube") {
+    return (
+      <svg {...common} {...strokeProps}>
         <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
         <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
-      </>
-    ),
-  };
+      </svg>
+    );
+  }
+
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="size-4"
-    >
-      {paths[name]}
+    <svg {...common} {...strokeProps}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -100,16 +114,16 @@ export function Footer() {
               <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
             <div className="mt-6 flex gap-2">
-              {(["github", "x", "linkedin", "youtube"] as const).map((name) => (
+              {SOCIAL_LINKS.map((social) => (
                 <a
-                  key={name}
-                  href={URANTIX_STORE_URL}
+                  key={social.name}
+                  href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={name}
+                  aria-label={`VXCore en ${social.name} (se abre en una pestaña nueva)`}
                   className="flex size-9 items-center justify-center rounded-lg border border-border bg-background/50 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground dark:bg-white/[0.03]"
                 >
-                  <SocialIcon name={name} />
+                  <SocialIcon name={social.icon} />
                 </a>
               ))}
             </div>
@@ -133,6 +147,24 @@ export function Footer() {
                 </ul>
               </div>
             ))}
+
+            {/* Legal va aparte: son las únicas del pie que llevan a páginas
+                reales, no a anclas de la propia portada. */}
+            <div>
+              <h4 className="text-sm font-semibold">Legal</h4>
+              <ul className="mt-4 space-y-2.5">
+                {LEGAL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 

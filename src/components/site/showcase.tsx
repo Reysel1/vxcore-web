@@ -36,11 +36,9 @@ import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------ */
 
 function WidgetFrame({
-  url,
   children,
   className,
 }: {
-  url: string;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -55,10 +53,6 @@ function WidgetFrame({
           <span className="size-2.5 rounded-full bg-red-400/90" />
           <span className="size-2.5 rounded-full bg-amber-400/90" />
           <span className="size-2.5 rounded-full bg-emerald-400/90" />
-          <div className="mx-auto hidden items-center gap-2 rounded-md bg-muted px-3 py-1 font-mono text-xs text-muted-foreground sm:flex">
-            {url}
-          </div>
-          <div className="ml-auto w-10 sm:hidden" />
         </div>
         {children}
       </div>
@@ -129,7 +123,7 @@ function ConsoleWidget() {
   };
 
   return (
-    <WidgetFrame url="VXCore · console">
+    <WidgetFrame>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70">
@@ -247,7 +241,7 @@ function LogsWidget() {
   const filters: Array<LogRow["level"] | "all"> = ["all", "ERROR", "WARN", "INFO", "DEBUG"];
 
   return (
-    <WidgetFrame url="VXCore · logs">
+    <WidgetFrame>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2">
         <div className="flex flex-wrap gap-1">
@@ -403,7 +397,7 @@ function AgentWidget() {
   };
 
   return (
-    <WidgetFrame url="VXCore · agent">
+    <WidgetFrame>
       {/* Header */}
       <div className="flex items-center gap-2.5 border-b border-border bg-muted/30 px-3 py-2.5">
         <span className="flex size-7 items-center justify-center rounded-md bg-foreground text-background">
@@ -426,11 +420,11 @@ function AgentWidget() {
         {msgs.map((m) =>
           m.role === "agent" ? (
             <div key={m.id} className="flex items-start gap-2">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-900">
                 <Bot className="size-3.5" />
               </span>
               <div className="min-w-0">
-                <div className="rounded-lg rounded-tl-sm border border-border/70 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-foreground/85">
+                <div className="rounded-lg rounded-tl-sm border border-white/10 bg-white/5 px-3 py-2 text-xs leading-relaxed text-zinc-200">
                   {m.text}
                 </div>
                 {m.actions && (
@@ -439,7 +433,7 @@ function AgentWidget() {
                       <button
                         key={a}
                         onClick={() => send(a)}
-                        className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        className="inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-zinc-300 transition-colors hover:bg-white/15 hover:text-white"
                       >
                         {a}
                       </button>
@@ -450,10 +444,10 @@ function AgentWidget() {
             </div>
           ) : (
             <div key={m.id} className="flex items-start justify-end gap-2">
-              <div className="rounded-lg rounded-tr-sm bg-foreground px-3 py-2 text-xs text-background">
+              <div className="rounded-lg rounded-tr-sm bg-zinc-100 px-3 py-2 text-xs text-zinc-900">
                 {m.text}
               </div>
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-zinc-300">
                 <User className="size-3.5" />
               </span>
             </div>

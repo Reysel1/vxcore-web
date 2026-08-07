@@ -10,12 +10,22 @@ export function LogoMark({ className }: { className?: string }) {
         className
       )}
     >
+      {/* Dos ficheros en vez de `useTheme`: el cambio lo hace CSS, así el logo
+          correcto ya viene en el HTML del servidor y no parpadea al hidratar. */}
       <Image
-        src="/brand/vxcore-logo.png"
+        src="/brand/light.png"
         alt=""
         fill
         sizes="32px"
-        className="object-cover"
+        className="object-cover dark:hidden"
+        aria-hidden
+      />
+      <Image
+        src="/brand/dark.png"
+        alt=""
+        fill
+        sizes="32px"
+        className="hidden object-cover dark:block"
         aria-hidden
       />
     </span>
