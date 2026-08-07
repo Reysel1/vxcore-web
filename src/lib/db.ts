@@ -120,6 +120,11 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_licenses_email ON licenses(user_email);
+  -- Una sola licencia ACTIVA por usuario: si el webhook de Stripe se repite
+  -- (respuesta perdida, reintento), no se pueden crear dos licencias.
+  -- Es un índice parcial: un usuario puede tener varias históricas (revocadas).
+  -- Se crea además con try/catch en getDb() por si una BD vieja ya tiene
+  -- duplicados activos (ahí no se crea, pero la BD sigue funcionando).
 
   CREATE TABLE IF NOT EXISTS installers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -243,6 +248,18 @@ export function getDb(): Driver {
   try {
     db = isRemote() ? makeRemoteDriver() : makeLocalDriver();
     migrate(db);
+    // Guardado tolerante: si una BD antigua ya tiene dos licencias activas del
+    // mismo usuario, el índice no se crea pero la BD sigue funcionando.
+    try {
+      db.exec(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_licenses_one_active ON licenses(user_email) WHERE status = 'active'"
+      );
+    } catch (indexErr) {
+      console.warn(
+        "[VXCore] No se pudo crear el índice único de licencias activas (¿duplicados previos?):",
+        indexErr instanceof Error ? indexErr.message : indexErr
+      );
+    }
   } catch (err) {
     // Nunca crashear: degrada a memoria y expón el error para la UI.
     const message =

@@ -84,9 +84,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // La licencia se genera una sola vez por usuario.
+    // La licencia se genera una sola vez por usuario. El índice único parcial
+    // (idx_licenses_one_active) hace la comprobación atómica: si dos entregas
+    // del evento llegan a la vez, solo una crea la licencia y la otra recibe el
+    // error de constraint, que aquí se trata como "ya existe" (no como fallo).
     if (!getActiveLicense(email)) {
-      createLicense({ userEmail: email, note: "Generada tras pago con Stripe" });
+      try {
+        createLicense({ userEmail: email, note: "Generada tras pago con Stripe" });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (!/unique|constraint/i.test(message)) {
+          throw err; // error real de BD → 500 → Stripe reintenta
+        }
+        console.warn("[webhook] licencia ya existente (evento duplicado), se omite.");
+      }
     }
   }
 
