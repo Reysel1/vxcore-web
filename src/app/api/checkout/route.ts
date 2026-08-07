@@ -66,7 +66,11 @@ export async function POST(req: NextRequest) {
   try {
     const stripe = getStripe();
     const checkout = await stripe.checkout.sessions.create({
-      mode: "payment",
+      // El precio del plan es recurrente (27 €/mes, que es lo que anuncia la
+      // web). Con `payment` Stripe rechaza la sesión —«You specified `payment`
+      // mode but passed a recurring price»— y el catch de abajo lo tapaba con
+      // un «no se pudo iniciar el pago» que no decía nada.
+      mode: "subscription",
       line_items: [{ price: getPriceId()!, quantity: 1 }],
       customer_email: email,
       client_reference_id: email,

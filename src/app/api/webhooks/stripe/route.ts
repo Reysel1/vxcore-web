@@ -7,8 +7,26 @@ import {
   getOrderBySessionId,
   markOrderPaid,
   requireHealthyDb,
+  setLicenseStatus,
 } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
+
+/**
+ * Email del cliente a partir de su id de Stripe.
+ *
+ * Los eventos de suscripción no traen el email, solo `customer`, así que hay
+ * que preguntárselo a Stripe. Devuelve null si el cliente fue borrado.
+ */
+async function emailForCustomer(customerId: string): Promise<string | null> {
+  try {
+    const customer = await getStripe().customers.retrieve(customerId);
+    if (customer.deleted) return null;
+    return customer.email ?? null;
+  } catch (err) {
+    console.error("[webhook] no se pudo resolver el cliente:", err);
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -97,6 +115,27 @@ export async function POST(req: NextRequest) {
           throw err; // error real de BD → 500 → Stripe reintenta
         }
         console.warn("[webhook] licencia ya existente (evento duplicado), se omite.");
+      }
+    }
+  }
+
+  // El plan es una suscripción y la web promete «cancela cuando quieras». Sin
+  // esto, cancelar dejaba la licencia activa para siempre: se cobraba una vez y
+  // el acceso no se retiraba nunca. Stripe manda este evento cuando la
+  // suscripción termina de verdad (al acabar el periodo ya pagado), no al
+  // pedir la baja, así que el usuario conserva lo que pagó.
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as { customer?: string | null };
+    const customerId = subscription.customer;
+
+    if (typeof customerId === "string") {
+      const email = await emailForCustomer(customerId);
+      if (email) {
+        const license = getActiveLicense(email);
+        if (license) {
+          setLicenseStatus(Number(license.id), "revoked");
+          console.log(`[webhook] licencia revocada por baja de suscripción: ${email}`);
+        }
       }
     }
   }
