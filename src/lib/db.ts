@@ -151,6 +151,19 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_email);
+
+  CREATE TABLE IF NOT EXISTS tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    subject TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
+    rating INTEGER,
+    rating_comment TEXT,
+    closed_at TEXT,
+    rated_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_tickets_email ON tickets(user_email);
 `;
 
 let db: Driver | null = null;
@@ -596,6 +609,70 @@ export function listConversations(): Row[] {
        ORDER BY last_at DESC`
     )
     .all() as Row[];
+}
+
+/* ------------------------------------------------------------------ */
+/* Tickets de soporte                                                  */
+/* ------------------------------------------------------------------ */
+
+export function createTicket(input: {
+  userEmail: string;
+  subject?: string | null;
+}): Row {
+  const db = getDb();
+  const info = db
+    .prepare("INSERT INTO tickets (user_email, subject) VALUES (?, ?)")
+    .run(input.userEmail, input.subject ?? null);
+  return db
+    .prepare("SELECT * FROM tickets WHERE id = ?")
+    .get(Number(info.lastInsertRowid)) as Row;
+}
+
+/** Último ticket abierto del usuario (solo puede haber uno). */
+export function getOpenTicket(userEmail: string): Row | undefined {
+  return getDb()
+    .prepare(
+      "SELECT * FROM tickets WHERE user_email = ? AND status = 'open' ORDER BY id DESC LIMIT 1"
+    )
+    .get(userEmail) as Row | undefined;
+}
+
+/** Último ticket del usuario (abierto o cerrado). */
+export function getUserTicket(userEmail: string): Row | undefined {
+  return getDb()
+    .prepare(
+      "SELECT * FROM tickets WHERE user_email = ? ORDER BY id DESC LIMIT 1"
+    )
+    .get(userEmail) as Row | undefined;
+}
+
+export function getTicketById(
+  id: number,
+  userEmail: string
+): Row | undefined {
+  return getDb()
+    .prepare("SELECT * FROM tickets WHERE id = ? AND user_email = ?")
+    .get(id, userEmail) as Row | undefined;
+}
+
+export function closeTicket(id: number): void {
+  getDb()
+    .prepare(
+      "UPDATE tickets SET status = 'closed', closed_at = datetime('now') WHERE id = ? AND status = 'open'"
+    )
+    .run(id);
+}
+
+export function rateTicket(
+  id: number,
+  rating: number,
+  comment: string | null
+): void {
+  getDb()
+    .prepare(
+      "UPDATE tickets SET rating = ?, rating_comment = ?, rated_at = datetime('now') WHERE id = ?"
+    )
+    .run(rating, comment, id);
 }
 
 /* ------------------------------------------------------------------ */

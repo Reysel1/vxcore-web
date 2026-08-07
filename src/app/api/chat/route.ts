@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
   addMessage,
+  getOpenTicket,
+  getUserTicket,
   listMessages,
   markMessagesRead,
   requireHealthyDb,
@@ -24,7 +26,11 @@ export async function GET(req: NextRequest) {
     ? messages.filter((m) => Number(m.id) > after)
     : messages;
 
-  return NextResponse.json({ messages: filtered });
+  // El ticket se devuelve junto a los mensajes para que el chat conozca
+  // el estado (abierto/cerrado/valorado) con una sola petición.
+  const ticket = getUserTicket(email) ?? null;
+
+  return NextResponse.json({ messages: filtered, ticket });
 }
 
 export async function POST(req: NextRequest) {
@@ -64,6 +70,14 @@ export async function POST(req: NextRequest) {
             : "La base de datos no está disponible.",
       },
       { status: 503 }
+    );
+  }
+
+  // Para escribir hace falta un ticket abierto: el chat va por tickets.
+  if (!getOpenTicket(email)) {
+    return NextResponse.json(
+      { error: "Abre un ticket para poder escribir." },
+      { status: 400 }
     );
   }
 
