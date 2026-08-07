@@ -44,6 +44,34 @@ export function getDbError(): string | null {
   return dbError;
 }
 
+/**
+ * Columnas añadidas después de la primera versión del esquema.
+ *
+ * `CREATE TABLE IF NOT EXISTS` no toca una tabla que ya existe, así que las
+ * bases creadas antes se quedarían sin estas columnas. SQLite no tiene
+ * `ADD COLUMN IF NOT EXISTS`, de ahí la comprobación con PRAGMA.
+ */
+const MIGRATIONS: { table: string; column: string; type: string }[] = [
+  { table: "installers", column: "asset_id", type: "INTEGER" },
+  { table: "installers", column: "asset_repo", type: "TEXT" },
+];
+
+function migrate(driver: Driver): void {
+  const columnsByTable = new Map<string, Set<string>>();
+
+  for (const { table, column, type } of MIGRATIONS) {
+    let existing = columnsByTable.get(table);
+    if (!existing) {
+      const info = driver.prepare(`PRAGMA table_info(${table})`).all();
+      existing = new Set(info.map((row) => String(row.name)));
+      columnsByTable.set(table, existing);
+    }
+    if (existing.has(column)) continue;
+    driver.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+    existing.add(column);
+  }
+}
+
 /** ¿Modo remoto (Turso)? Se activa definiendo TURSO_DATABASE_URL. */
 export function isRemote(): boolean {
   return Boolean(process.env.TURSO_DATABASE_URL);
@@ -99,6 +127,8 @@ const SCHEMA = `
     size_bytes INTEGER NOT NULL DEFAULT 0,
     is_latest INTEGER NOT NULL DEFAULT 0,
     note TEXT,
+    asset_id INTEGER,
+    asset_repo TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -197,6 +227,7 @@ export function getDb(): Driver {
   if (db) return db;
   try {
     db = isRemote() ? makeRemoteDriver() : makeLocalDriver();
+    migrate(db);
   } catch (err) {
     // Nunca crashear: degrada a memoria y expón el error para la UI.
     const message =

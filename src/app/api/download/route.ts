@@ -11,6 +11,7 @@ import {
   hasDownloadAccess,
   isRemote,
 } from "@/lib/db";
+import { GithubError, getAssetDownloadUrl } from "@/lib/github";
 
 export async function GET() {
   const session = await auth();
@@ -38,14 +39,40 @@ export async function GET() {
     );
   }
 
-  // En modo remoto (Vercel) el disco no guarda instaladores: los ficheros viven
-  // en la máquina local donde se gestionan. Avisamos con claridad en vez de
-  // devolver un 404 genérico.
+  // Instaladores alojados en releases de GitHub: pedimos una URL firmada y
+  // temporal, y redirigimos. Los cientos de MB del .exe no pasan por aquí, que
+  // es justo lo que hace viable servirlo desde una función serverless.
+  if (installer.asset_id) {
+    try {
+      const url = await getAssetDownloadUrl(Number(installer.asset_id));
+      if (!url) {
+        return NextResponse.json(
+          {
+            error:
+              "El instalador ya no está disponible en GitHub. Avisa al staff.",
+          },
+          { status: 404 }
+        );
+      }
+      return NextResponse.redirect(url, 302);
+    } catch (err) {
+      if (err instanceof GithubError) {
+        console.error("[VXCore] Error al resolver el instalador:", err.message);
+        return NextResponse.json(
+          { error: "No se pudo preparar la descarga. Avisa al staff." },
+          { status: 502 }
+        );
+      }
+      throw err;
+    }
+  }
+
+  // Versiones antiguas guardadas en disco: solo existen en modo local.
   if (isRemote()) {
     return NextResponse.json(
       {
         error:
-          "Los instaladores se publican desde el servidor local de VXCore. Usa el panel de administración local para subir el .exe.",
+          "Esta versión se publicó en el servidor local y no está disponible aquí. Vuelve a publicarla desde el panel de administración.",
       },
       { status: 404 }
     );
