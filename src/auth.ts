@@ -3,6 +3,10 @@ import Discord from "next-auth/providers/discord";
 import Google from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Necesario fuera del modo dev: sin él, `next start` (y el escritorio)
+  // fallan con "UntrustedHost". En Vercel se auto-habilita, pero es correcto
+  // y seguro dejarlo explícito.
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
