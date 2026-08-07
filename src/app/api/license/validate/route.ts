@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getLicenseByKey, requireHealthyDb } from "@/lib/db";
+import { getLicenseByKey, requireHealthyDb, touchInstallation } from "@/lib/db";
+
+/** Mismo formato que genera el agente (agent/src/installation.ts). */
+const INSTALLATION_ID_RE = /^[abcdefghijkmnpqrstuvwxyz23456789]{16}$/;
 
 /**
  * Validación de licencias para la app de escritorio.
@@ -13,9 +16,13 @@ import { getLicenseByKey, requireHealthyDb } from "@/lib/db";
  */
 export async function POST(req: NextRequest) {
   let key: unknown;
+  let installationId: unknown;
+  let installationName: unknown;
   try {
     const body = await req.json();
     key = body?.key;
+    installationId = body?.installationId;
+    installationName = body?.installationName;
   } catch {
     return NextResponse.json({ valid: false, error: "Cuerpo inválido" }, { status: 400 });
   }
@@ -41,6 +48,23 @@ export async function POST(req: NextRequest) {
   }
   if (String(row.status) !== "active") {
     return NextResponse.json({ valid: false, reason: "revoked" });
+  }
+
+  // Sólo se registra el equipo cuando la licencia es válida: si no, cualquiera
+  // podría llenar la tabla probando claves inventadas.
+  //
+  // Un fallo aquí no puede tumbar la validación — dejar una app pagada sin
+  // arrancar por no poder anotar estadísticas sería absurdo.
+  if (typeof installationId === "string" && INSTALLATION_ID_RE.test(installationId)) {
+    try {
+      touchInstallation({
+        id: installationId,
+        licenseKey: String(row.license_key),
+        name: typeof installationName === "string" ? installationName.slice(0, 60) : null,
+      });
+    } catch (err) {
+      console.error("[license] no se pudo registrar la instalación:", err);
+    }
   }
 
   return NextResponse.json({ valid: true, email: row.user_email });

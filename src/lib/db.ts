@@ -171,6 +171,23 @@ const SCHEMA = `
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_tickets_email ON tickets(user_email);
+
+  -- Equipos donde está instalada la app. El agente se identifica en cada
+  -- validación de licencia (cada 10 min con la app abierta), así que esta
+  -- tabla se mantiene sola.
+  --
+  -- La licencia se guarda por clave y NO con clave foránea a propósito: la
+  -- referencia se resuelve en cada consulta contra el estado vivo de la
+  -- licencia. Así revocarla corta el acceso sin tener que tocar esta tabla,
+  -- y el historial de qué equipo usó qué licencia no se pierde.
+  CREATE TABLE IF NOT EXISTS installations (
+    id TEXT PRIMARY KEY,
+    license_key TEXT NOT NULL,
+    name TEXT,
+    first_seen TEXT NOT NULL DEFAULT (datetime('now')),
+    last_seen TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_installations_license ON installations(license_key);
 `;
 
 let db: Driver | null = null;
@@ -489,6 +506,63 @@ export function listLicenses(): Row[] {
 
 export function setLicenseStatus(id: number, status: "active" | "revoked"): void {
   getDb().prepare("UPDATE licenses SET status = ? WHERE id = ?").run(status, id);
+}
+
+/* ------------------------------------------------------------------ */
+/* Instalaciones                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Anota que esta instalación sigue viva y a qué licencia responde.
+ *
+ * Se llama desde la validación de licencia, que el agente repite cada 10 min.
+ * Si el equipo cambia de clave (el dueño reactiva con otra licencia), la fila
+ * se reasigna: la instalación es el equipo, no la compra.
+ */
+export function touchInstallation(input: {
+  id: string;
+  licenseKey: string;
+  name?: string | null;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO installations (id, license_key, name)
+       VALUES (?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         license_key = excluded.license_key,
+         name = COALESCE(excluded.name, installations.name),
+         last_seen = datetime('now')`
+    )
+    .run(input.id, input.licenseKey, input.name?.trim() || null);
+}
+
+/** Equipos de una licencia, del más recientemente visto al más antiguo. */
+export function listInstallationsForLicense(licenseKey: string): Row[] {
+  return getDb()
+    .prepare(
+      "SELECT * FROM installations WHERE LOWER(license_key) = LOWER(?) ORDER BY last_seen DESC"
+    )
+    .all(String(licenseKey).trim()) as Row[];
+}
+
+/**
+ * Todas las instalaciones con el estado VIVO de su licencia.
+ *
+ * El `LEFT JOIN` es lo que hace que revocar una licencia se note aquí sin
+ * tocar esta tabla: `license_status` pasa a 'revoked' (o a NULL si la licencia
+ * se borró) en la siguiente consulta, sin trabajo de mantenimiento.
+ */
+export function listInstallations(): Row[] {
+  return getDb()
+    .prepare(
+      `SELECT i.*,
+         l.status AS license_status,
+         l.user_email AS license_email
+       FROM installations i
+       LEFT JOIN licenses l ON LOWER(l.license_key) = LOWER(i.license_key)
+       ORDER BY i.last_seen DESC`
+    )
+    .all() as Row[];
 }
 
 export function hasActiveLicense(email: string): boolean {
