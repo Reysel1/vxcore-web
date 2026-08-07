@@ -7,6 +7,7 @@ import { Check, Copy, CreditCard, Loader2, LogOut } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { startCheckout } from "@/lib/checkout";
 
 /* ------------------------------------------------------------------ */
 /* Botón de pago con Stripe                                            */
@@ -18,24 +19,12 @@ export function CheckoutButton() {
 
   async function handleCheckout() {
     setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", { method: "POST" });
-      if (res.status === 401) {
-        // Sesión caducada: de vuelta al login.
-        router.push("/?login=1");
-        return;
-      }
-      const data = await res.json();
-      if (res.ok && data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      toast.error(data.error ?? "No se pudo iniciar el pago.");
-    } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
-    } finally {
-      setLoading(false);
+    const result = await startCheckout();
+    if (result === "login") {
+      // Sesión caducada: de vuelta al login.
+      router.push("/?login=1");
     }
+    setLoading(false);
   }
 
   return (
@@ -84,6 +73,32 @@ export function CopyLicenseKey({ licenseKey }: { licenseKey: string }) {
       {copied ? "Copiada" : "Copiar"}
     </Button>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pago automático al llegar con intención de compra (?pay=1)          */
+/* ------------------------------------------------------------------ */
+
+export function AutoCheckout() {
+  const router = useRouter();
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("pay") !== "1") return;
+
+    (async () => {
+      const result = await startCheckout();
+      if (result === "login") {
+        router.push("/?login=1");
+        return;
+      }
+      // Si nos quedamos en la página (error o Stripe sin configurar),
+      // limpiamos el intento para que recargar no reintente el pago solo.
+      window.history.replaceState({}, "", "/dashboard");
+    })();
+  }, [router]);
+
+  return null;
 }
 
 /* ------------------------------------------------------------------ */

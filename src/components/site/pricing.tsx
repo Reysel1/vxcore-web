@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Reveal } from "@/components/site/reveal";
 import { SectionHeading } from "@/components/site/section-heading";
+import { startCheckout } from "@/lib/checkout";
 import { cn } from "@/lib/utils";
 
 const PLANS = [
@@ -30,7 +32,7 @@ const PLANS = [
     tagline: "Para servidores que crecen",
     monthly: 24,
     annual: 19,
-    cta: "Probar 14 días",
+    cta: "Comprar Pro",
     popular: true,
     features: [
       "Servidores ilimitados",
@@ -58,7 +60,21 @@ const PLANS = [
 ];
 
 export function Pricing() {
+  const router = useRouter();
   const [annual, setAnnual] = React.useState(true);
+  const [checkingOut, setCheckingOut] = React.useState(false);
+
+  // Lanza el checkout de Stripe. Si no hay sesión, primero se pide login y
+  // después se retoma el pago solo (con la intención ?pay=1).
+  async function handleProCheckout() {
+    if (checkingOut) return;
+    setCheckingOut(true);
+    const result = await startCheckout();
+    if (result === "login") {
+      router.push("/?login=1&pay=1");
+    }
+    setCheckingOut(false);
+  }
 
   return (
     <section id="pricing" className="relative scroll-mt-24 py-24 sm:py-32">
@@ -160,13 +176,51 @@ export function Pricing() {
                       ))}
                     </ul>
 
-                    <Button
-                      variant={plan.popular ? "default" : "outline"}
-                      className={cn("group/btn h-10 w-full gap-2")}
-                    >
-                      {plan.cta}
-                      <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
-                    </Button>
+                    {plan.popular ? (
+                      /* Pro: inicia el pago con Stripe */
+                      <Button
+                        variant="default"
+                        className="group/btn h-10 w-full gap-2"
+                        onClick={handleProCheckout}
+                        disabled={checkingOut}
+                      >
+                        {checkingOut ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Abriendo pago…
+                          </>
+                        ) : (
+                          <>
+                            {plan.cta}
+                            <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
+                          </>
+                        )}
+                      </Button>
+                    ) : plan.name === "Enterprise" ? (
+                      /* Enterprise: contacto comercial */
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="group/btn h-10 w-full gap-2"
+                      >
+                        <a href="#contacto">
+                          {plan.cta}
+                          <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
+                        </a>
+                      </Button>
+                    ) : (
+                      /* Starter: gratis — al panel (y login si hace falta) */
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="group/btn h-10 w-full gap-2"
+                      >
+                        <a href="/dashboard">
+                          {plan.cta}
+                          <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
+                        </a>
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </Reveal>

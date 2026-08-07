@@ -129,7 +129,8 @@ export function Stats() {
             <span className="size-2.5 rounded-full bg-amber-400/90" />
             <span className="size-2.5 rounded-full bg-emerald-400/90" />
             <div className="mx-auto hidden items-center gap-2 rounded-md bg-muted px-3 py-1 font-mono text-xs text-muted-foreground sm:flex">
-              app.vxcore.io/dashboard
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              VXCore
             </div>
             <span className="ml-auto hidden items-center gap-1.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
               <span className="size-1.5 rounded-full bg-foreground/50" />

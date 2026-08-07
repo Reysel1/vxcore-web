@@ -129,7 +129,7 @@ function ConsoleWidget() {
   };
 
   return (
-    <WidgetFrame url="app.vxcore.io/console">
+    <WidgetFrame url="VXCore · console">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70">
@@ -247,7 +247,7 @@ function LogsWidget() {
   const filters: Array<LogRow["level"] | "all"> = ["all", "ERROR", "WARN", "INFO", "DEBUG"];
 
   return (
-    <WidgetFrame url="app.vxcore.io/logs">
+    <WidgetFrame url="VXCore · logs">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2">
         <div className="flex flex-wrap gap-1">
@@ -403,7 +403,7 @@ function AgentWidget() {
   };
 
   return (
-    <WidgetFrame url="app.vxcore.io/agent">
+    <WidgetFrame url="VXCore · agent">
       {/* Header */}
       <div className="flex items-center gap-2.5 border-b border-border bg-muted/30 px-3 py-2.5">
         <span className="flex size-7 items-center justify-center rounded-md bg-foreground text-background">

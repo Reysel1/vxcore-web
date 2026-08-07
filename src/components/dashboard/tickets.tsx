@@ -155,7 +155,10 @@ export function UserTickets() {
   const loadTickets = React.useCallback(async () => {
     try {
       const res = await fetch("/api/tickets");
-      if (res.status === 401) return;
+      if (res.status === 401) {
+        router.push("/?login=1");
+        return;
+      }
       const data = await res.json();
       if (!Array.isArray(data.tickets)) return;
       const list = data.tickets as Ticket[];
@@ -170,8 +173,11 @@ export function UserTickets() {
       }
     } catch {
       /* noop */
+    } finally {
+      // La lista terminó de cargar (aunque esté vacía): salir del spinner.
+      setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   /* ---------- mensajes del ticket seleccionado ---------- */
   const loadMessages = React.useCallback(async (ticketId: number) => {

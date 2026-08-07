@@ -456,6 +456,15 @@ export function createLicense(input: {
     .get(Number(info.lastInsertRowid)) as Row;
 }
 
+/** Busca una licencia por su clave (sin distinguir mayúsculas). */
+export function getLicenseByKey(key: string): Row | undefined {
+  return getDb()
+    .prepare(
+      "SELECT license_key, user_email, status FROM licenses WHERE LOWER(license_key) = LOWER(?)"
+    )
+    .get(String(key).trim()) as Row | undefined;
+}
+
 export function getActiveLicense(email: string): Row | undefined {
   return getDb()
     .prepare(

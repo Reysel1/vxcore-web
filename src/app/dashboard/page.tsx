@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AutoCheckout,
   CheckoutButton,
   CopyLicenseKey,
   PaymentStatusToast,
@@ -91,6 +92,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-dvh">
       <PaymentStatusToast />
+      <AutoCheckout />
 
       {/* Cabecera */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">

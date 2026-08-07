@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { LoginSheet } from "@/components/site/login-sheet";
 import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
@@ -115,9 +116,12 @@ export function Navbar() {
               <Button variant="outline" className="h-9 px-4" onClick={() => setLoginOpen(true)}>
                 Iniciar sesión
               </Button>
-              <Button className="h-9 px-4" onClick={() => setLoginOpen(true)}>
+              <RainbowButton
+                className="h-9 rounded-xl px-4"
+                onClick={() => setLoginOpen(true)}
+              >
                 Empezar gratis
-              </Button>
+              </RainbowButton>
             </>
           )}
         </div>

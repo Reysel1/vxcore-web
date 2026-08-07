@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { ShieldCheck } from "lucide-react";
+import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,8 +51,18 @@ export function LoginSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  // Si el usuario venía de pulsar "Comprar Pro", tras el login retomamos el
+  // pago automáticamente (/dashboard?pay=1 dispara el checkout).
+  const [payIntent] = React.useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("pay") === "1"
+  );
+
   const provider = (name: string) =>
-    signIn(name, { callbackUrl: "/dashboard" });
+    signIn(name, {
+      callbackUrl: payIntent ? "/dashboard?pay=1" : "/dashboard",
+    });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
