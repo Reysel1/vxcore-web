@@ -2,10 +2,13 @@
 
 import {
   Activity,
+  BarChart3,
   Database,
   FileCode2,
   Radio,
   Server,
+  ServerCog,
+  SquareKanban,
   Workflow,
 } from "lucide-react";
 import Image from "next/image";
@@ -18,15 +21,24 @@ const VIEWS = [
     id: "console",
     label: "Consola RCON",
     Icon: Radio,
-    file: "/panel/consola.png",
-    w: 1158,
-    h: 863,
+    file: "/panel/cmd.png",
+    w: 1176,
+    h: 880,
     alt: "VXCore panel — Consola RCON interactiva con salida en vivo del servidor FXServer",
   },
   {
     id: "servers",
     label: "Servidores",
     Icon: Server,
+    file: "/panel/server.png",
+    w: 1181,
+    h: 866,
+    alt: "VXCore panel — Gestión de servidores con estado, métricas y acciones",
+  },
+  {
+    id: "servers-list",
+    label: "Lista de servidores",
+    Icon: ServerCog,
     file: "/panel/servers.png",
     w: 1249,
     h: 930,
@@ -60,13 +72,32 @@ const VIEWS = [
     alt: "VXCore panel — Eventos del servidor con métricas en tiempo real",
   },
   {
-    id: "automations",
-    label: "Automatizaciones",
-    Icon: Workflow,
-    file: "/panel/trello.png",
+    id: "events2",
+    label: "Eventos 2",
+    Icon: BarChart3,
+    file: "/panel/eventsp2.png",
     w: 1920,
-    h: 1042,
-    alt: "VXCore panel — Tablero de automatizaciones y planificación",
+    h: 1036,
+    alt: "VXCore panel — Segunda vista de eventos y actividad del servidor",
+  },
+  {
+    id: "flows",
+    label: "Flujos",
+    Icon: Workflow,
+    file: "/panel/flujp.png",
+    w: 886,
+    h: 871,
+    maxH: 640,
+    alt: "VXCore panel — Creador de flujos y automatizaciones con el agente IA",
+  },
+  {
+    id: "board",
+    label: "Tablero",
+    Icon: SquareKanban,
+    file: "/panel/trello.png",
+    w: 1164,
+    h: 856,
+    alt: "VXCore panel — Tablero kanban para coordinar el trabajo del equipo",
   },
 ];
 
@@ -123,29 +154,32 @@ export function PanelDemo() {
           role="tabpanel"
           aria-labelledby={`tab-${view.id}`}
           className="relative w-full overflow-hidden bg-[#0d0d13] transition-[aspect-ratio] duration-500 ease-out"
-          style={{ aspectRatio: `${view.w} / ${view.h}` }}
+          style={{ aspectRatio: `${view.w} / ${view.h}`, maxHeight: view.maxH ?? undefined }}
         >
           {/* Sheen sweep over the screenshot only */}
           <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
             <div className="absolute -inset-y-10 -left-1/2 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent transition-transform duration-1000 group-hover/frame:translate-x-[420%]" />
           </div>
-          {VIEWS.map(({ id, file, alt }) => (
-            <Image
-              key={id}
-              src={file}
-              alt={alt}
-              fill
-              priority={id === VIEWS[0].id}
-              quality={100}
-              sizes="(min-width: 1152px) 1152px, 100vw"
-              aria-hidden={active !== id}
-              className={cn(
-                "object-cover object-top transition-opacity duration-500",
-                "contrast-[1.04] saturate-[1.06]",
-                active === id ? "opacity-100" : "opacity-0"
-              )}
-            />
-          ))}
+          {VIEWS.map(({ id, file, alt }) => {
+            const fits = VIEWS.find((v) => v.id === id)?.maxH != null;
+            return (
+              <Image
+                key={id}
+                src={file}
+                alt={alt}
+                fill
+                priority={id === VIEWS[0].id}
+                quality={100}
+                sizes="(min-width: 1152px) 1152px, 100vw"
+                aria-hidden={active !== id}
+                className={cn(
+                  fits ? "object-contain" : "object-cover object-top",
+                  "transition-opacity duration-500 contrast-[1.04] saturate-[1.06]",
+                  active === id ? "opacity-100" : "opacity-0"
+                )}
+              />
+            );
+          })}
 
           {/* Crisp highlight overlay */}
           <div
