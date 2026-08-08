@@ -188,6 +188,27 @@ const SCHEMA = `
     last_seen TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_installations_license ON installations(license_key);
+
+  -- Túnel de Cloudflare de cada instalación: es lo que le da al cliente su
+  -- enlace público (<id>.reylab.cloud) sin abrir puertos en su router.
+  --
+  -- installation_id es la clave primaria y ahí está el motivo de la tabla:
+  -- hace que aprovisionar sea idempotente. Un agente que vuelve a pedir su
+  -- túnel recibe el que ya tiene; sin esto, cada reinstalación dejaría un
+  -- túnel huérfano en la cuenta de Cloudflare y un DNS apuntando a la nada.
+  --
+  -- tunnel_secret es una credencial: con ella se puede levantar el túnel de
+  -- ese cliente. Trátala como una contraseña.
+  CREATE TABLE IF NOT EXISTS tunnels (
+    installation_id TEXT PRIMARY KEY,
+    installation_name TEXT NOT NULL DEFAULT '',
+    license_key TEXT NOT NULL,
+    hostname TEXT NOT NULL,
+    tunnel_id TEXT NOT NULL,
+    tunnel_secret TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_tunnels_license ON tunnels(license_key);
 `;
 
 let db: Driver | null = null;
@@ -577,6 +598,73 @@ export function hasActiveLicense(email: string): boolean {
 /** Un usuario puede descargar si pagó o tiene una licencia activa. */
 export function hasDownloadAccess(email: string): boolean {
   return hasPaid(email) || hasActiveLicense(email);
+}
+
+/* ------------------------------------------------------------------ */
+/* Túneles (acceso remoto al panel)                                    */
+/* ------------------------------------------------------------------ */
+
+/** El túnel ya aprovisionado de una instalación, si lo tiene. */
+export function getTunnel(installationId: string): Row | undefined {
+  return getDb()
+    .prepare("SELECT * FROM tunnels WHERE installation_id = ?")
+    .get(String(installationId).trim()) as Row | undefined;
+}
+
+/**
+ * A qué licencia responde un equipo, según la última validación.
+ *
+ * Sirve para no dejar que alguien con una licencia válida pida el túnel de la
+ * instalación de otro cliente y se quede con su enlace.
+ */
+export function getInstallationOwner(installationId: string): Row | undefined {
+  return getDb()
+    .prepare("SELECT license_key FROM installations WHERE id = ?")
+    .get(String(installationId).trim()) as Row | undefined;
+}
+
+export function saveTunnel(input: {
+  installationId: string;
+  installationName?: string | null;
+  licenseKey: string;
+  hostname: string;
+  tunnelId: string;
+  tunnelSecret: string;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO tunnels
+         (installation_id, installation_name, license_key, hostname, tunnel_id, tunnel_secret)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(installation_id) DO UPDATE SET
+         installation_name = excluded.installation_name,
+         license_key = excluded.license_key,
+         hostname = excluded.hostname,
+         tunnel_id = excluded.tunnel_id,
+         tunnel_secret = excluded.tunnel_secret`
+    )
+    .run(
+      input.installationId,
+      input.installationName?.trim() || "",
+      input.licenseKey,
+      input.hostname,
+      input.tunnelId,
+      input.tunnelSecret
+    );
+}
+
+/** Túneles de una licencia, para el área de cuenta ("mis servidores"). */
+export function listTunnelsForLicense(licenseKey: string): Row[] {
+  return getDb()
+    .prepare(
+      `SELECT t.installation_id, t.installation_name, t.hostname, t.created_at,
+         i.last_seen
+       FROM tunnels t
+       LEFT JOIN installations i ON i.id = t.installation_id
+       WHERE LOWER(t.license_key) = LOWER(?)
+       ORDER BY i.last_seen DESC`
+    )
+    .all(String(licenseKey).trim()) as Row[];
 }
 
 /* ------------------------------------------------------------------ */
