@@ -95,7 +95,7 @@ function ConsoleWidget() {
   const [lines, setLines] = React.useState<Line[]>(INITIAL_LINES);
   const [input, setInput] = React.useState("");
   const idRef = React.useRef(100);
-  const endRef = React.useRef<HTMLDivElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   const push = React.useCallback(
     (kind: Line["kind"], text: string) => {
@@ -106,7 +106,11 @@ function ConsoleWidget() {
   );
 
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "auto", block: "nearest" });
+    // Scroll solo el contenedor de la terminal, no la ventana: scrollIntoView
+    // sobre un elemento anidado mueve también la página entera y, al entrar
+    // en la web, el scroll arrancaba en la sección showcase en lugar de arriba.
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
 
   const runCommand = (raw: string) => {
@@ -153,7 +157,10 @@ function ConsoleWidget() {
       </div>
 
       {/* Terminal */}
-      <div className="max-h-56 overflow-y-auto bg-[#0a0a10] p-3 font-mono text-[11px] leading-relaxed">
+      <div
+        ref={listRef}
+        className="max-h-56 overflow-y-auto bg-[#0a0a10] p-3 font-mono text-[11px] leading-relaxed"
+      >
         {lines.map((line) => (
           <div key={line.id} className="flex gap-2">
             <span className="w-7 shrink-0 select-none text-right tabular-nums text-zinc-600">
@@ -172,7 +179,6 @@ function ConsoleWidget() {
             )}
           </div>
         ))}
-        <div ref={endRef} />
       </div>
 
       {/* Input */}
@@ -368,7 +374,7 @@ function AgentWidget() {
   const [msgs, setMsgs] = React.useState<Msg[]>(INITIAL_MSGS);
   const [input, setInput] = React.useState("");
   const idRef = React.useRef(10);
-  const endRef = React.useRef<HTMLDivElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   const push = React.useCallback((m: Omit<Msg, "id">) => {
     idRef.current += 1;
@@ -376,7 +382,9 @@ function AgentWidget() {
   }, []);
 
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "auto", block: "nearest" });
+    // Ídem que en ConsoleWidget: scroll solo del hilo de chat, sin mover la página.
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [msgs]);
 
   const send = (raw?: string) => {
@@ -416,7 +424,10 @@ function AgentWidget() {
       </div>
 
       {/* Thread */}
-      <div className="max-h-64 space-y-3 overflow-y-auto bg-[#0a0a10] p-3">
+      <div
+        ref={listRef}
+        className="max-h-64 space-y-3 overflow-y-auto bg-[#0a0a10] p-3"
+      >
         {msgs.map((m) =>
           m.role === "agent" ? (
             <div key={m.id} className="flex items-start gap-2">
@@ -453,7 +464,6 @@ function AgentWidget() {
             </div>
           )
         )}
-        <div ref={endRef} />
       </div>
 
       {/* Input */}

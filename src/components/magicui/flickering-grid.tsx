@@ -28,8 +28,17 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+
+  // El patrón de la rejilla se guarda en un ref para que persista entre
+  // redimensionados y cambios de visibilidad. Así el grid no se regenera (con
+  // valores aleatorios nuevos) cuando el hero cambia de altura o el usuario
+  // hace scroll, que antes provocaba un "recarga" visible del fondo.
+  const gridRef = useRef<{ cols: number; rows: number; squares: Float32Array } | null>(null);
+  // La visibilidad vive en un ref (no en el estado) para no reiniciar el
+  // efecto —y con él el patrón— cada vez que el componente entra o sale del
+  // viewport.
+  const isInViewRef = useRef(false);
 
   const memoizedColor = useMemo(() => {
     const toRGBA = (color: string) => {
@@ -58,10 +67,39 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       const cols = Math.ceil(width / (squareSize + gridGap));
       const rows = Math.ceil(height / (squareSize + gridGap));
 
-      const squares = new Float32Array(cols * rows);
-      for (let i = 0; i < squares.length; i++) {
-        squares[i] = Math.random() * maxOpacity;
+      // Si la geometría no ha cambiado, reutilizamos el patrón cacheado: la
+      // animación continúa exactamente donde estaba, sin reiniciarse.
+      const prev = gridRef.current;
+      if (prev && prev.cols === cols && prev.rows === rows) {
+        return { cols, rows, squares: prev.squares, dpr };
       }
+
+      // La geometría cambió (creció o encogió el contenedor): conservamos los
+      // cuadrados que ya existían en la zona común y solo randomizamos los
+      // nuevos, para que el fondo no "parpadee" a un patrón completamente
+      // distinto al redimensionar.
+      const squares = new Float32Array(cols * rows);
+      if (prev) {
+        const overlapCols = Math.min(cols, prev.cols);
+        const overlapRows = Math.min(rows, prev.rows);
+        for (let i = 0; i < overlapCols; i++) {
+          for (let j = 0; j < overlapRows; j++) {
+            squares[i * rows + j] = prev.squares[i * prev.rows + j];
+          }
+        }
+        for (let idx = 0; idx < squares.length; idx++) {
+          const i = Math.floor(idx / rows);
+          const j = idx % rows;
+          if (i >= overlapCols || j >= overlapRows) {
+            squares[idx] = Math.random() * maxOpacity;
+          }
+        }
+      } else {
+        for (let i = 0; i < squares.length; i++) {
+          squares[i] = Math.random() * maxOpacity;
+        }
+      }
+      gridRef.current = { cols, rows, squares };
 
       return { cols, rows, squares, dpr };
     },
@@ -117,6 +155,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     let resizeObserver: ResizeObserver | null = null;
     let intersectionObserver: IntersectionObserver | null = null;
     let gridParams: ReturnType<typeof setupCanvas> | null = null;
+    let lastTime = 0;
 
     if (canvas && container && ctx) {
       const updateCanvasSize = () => {
@@ -128,11 +167,12 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
       updateCanvasSize();
 
-      let lastTime = 0;
       const animate = (time: number) => {
-        if (!isInView || !gridParams) return;
+        if (!isInViewRef.current || !gridParams) return;
 
-        const deltaTime = (time - lastTime) / 1000;
+        // Evita un delta gigante en el primer frame tras arrancar o redimensionar,
+        // que haría parpadear todos los cuadrados a la vez.
+        const deltaTime = lastTime === 0 ? 0 : (time - lastTime) / 1000;
         lastTime = time;
 
         updateSquares(gridParams.squares, deltaTime);
@@ -148,6 +188,19 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         animationFrameId = requestAnimationFrame(animate);
       };
 
+      const start = () => {
+        if (animationFrameId === null) {
+          lastTime = 0;
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      };
+      const stop = () => {
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      };
+
       resizeObserver = new ResizeObserver(() => {
         updateCanvasSize();
       });
@@ -155,14 +208,19 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
       intersectionObserver = new IntersectionObserver(
         ([entry]) => {
-          setIsInView(entry.isIntersecting);
+          isInViewRef.current = entry.isIntersecting;
+          if (entry.isIntersecting) {
+            start();
+          } else {
+            stop();
+          }
         },
         { threshold: 0 }
       );
       intersectionObserver.observe(canvas);
 
-      if (isInView) {
-        animationFrameId = requestAnimationFrame(animate);
+      if (isInViewRef.current) {
+        start();
       }
     }
 
@@ -177,7 +235,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         intersectionObserver.disconnect();
       }
     };
-  }, [setupCanvas, updateSquares, drawGrid, width, height, isInView]);
+  }, [setupCanvas, updateSquares, drawGrid, width, height]);
 
   return (
     <div ref={containerRef} className={cn(`h-full w-full ${className}`)} {...props}>
