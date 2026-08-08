@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Download,
+  Globe,
   KeyRound,
   PackageOpen,
   ReceiptText,
@@ -39,6 +40,7 @@ import {
   hasDownloadAccess,
   hasPaid,
   listOrdersForEmail,
+  listTunnelsForLicense,
 } from "@/lib/db";
 
 function initials(name?: string | null) {
@@ -66,6 +68,19 @@ function formatDate(sqlDate?: string | null) {
   });
 }
 
+/**
+ * ¿Sigue vivo ese equipo?
+ *
+ * El agente revalida su licencia cada 10 minutos con la app abierta, así que
+ * pasados 30 lo damos por apagado. Importa porque el panel se sirve desde la
+ * máquina del cliente: si está apagada, su enlace no responde, y sin decirlo
+ * el enlace parece roto.
+ */
+function isRecent(sqlDate?: string | null): boolean {
+  if (!sqlDate) return false;
+  return Date.now() - new Date(sqlDate.replace(" ", "T") + "Z").getTime() < 30 * 60 * 1000;
+}
+
 export default async function DashboardPage() {
   const session = await auth();
 
@@ -87,6 +102,8 @@ export default async function DashboardPage() {
   const license = getActiveLicense(email);
   const installer = getLatestInstaller();
   const orders = listOrdersForEmail(email);
+  // Sin licencia no hay equipos que listar: los túneles cuelgan de la clave.
+  const servers = license ? listTunnelsForLicense(String(license.license_key)) : [];
   const planLabel = process.env.STRIPE_PLAN_LABEL ?? "VXCore Pro";
 
   return (
@@ -303,6 +320,64 @@ export default async function DashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Servidores publicados: los equipos que han encendido el acceso
+              remoto y por tanto tienen una dirección propia. */}
+          {servers.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Globe className="size-4 text-muted-foreground" />
+                  Tus paneles
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Equipos con el acceso remoto activado. Se abren desde cualquier sitio, pero
+                  sólo entra quien tenga permiso en tu Discord.
+                </p>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {servers.map((server) => {
+                  // Un panel se sirve desde la máquina del cliente: si está
+                  // apagada, el enlace no responde. Decirlo aquí evita el
+                  // ticket de "mi enlace no va".
+                  const online = isRecent(server.last_seen as string | null);
+                  return (
+                    <div
+                      key={String(server.installation_id)}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            aria-hidden
+                            className={
+                              online
+                                ? "size-2 shrink-0 rounded-full bg-emerald-500"
+                                : "size-2 shrink-0 rounded-full bg-muted-foreground/30"
+                            }
+                          />
+                          <span className="truncate text-sm font-medium">
+                            {String(server.installation_name || "Sin nombre")}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {online ? "En línea" : "Equipo apagado — el enlace no responderá"}
+                        </p>
+                      </div>
+                      <a
+                        href={`https://${String(server.hostname)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="shrink-0 font-mono text-xs text-primary hover:underline"
+                      >
+                        {String(server.hostname)}
+                      </a>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Pedidos */}
           <Card>
