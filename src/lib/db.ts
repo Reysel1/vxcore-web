@@ -653,6 +653,22 @@ export function saveTunnel(input: {
     );
 }
 
+/**
+ * Olvida el túnel de una instalación.
+ *
+ * Hace falta porque el aprovisionamiento es idempotente: mientras la fila
+ * exista, se devuelven siempre las mismas credenciales. Eso está bien hasta
+ * que el túnel deja de valer —se borró en Cloudflare, se rotó el secreto— y
+ * entonces el cliente se queda reintentando con unas credenciales muertas para
+ * siempre, sin nada que pueda pulsar. Borrando la fila, la siguiente petición
+ * crea uno nuevo.
+ */
+export function deleteTunnel(installationId: string): void {
+  getDb()
+    .prepare("DELETE FROM tunnels WHERE installation_id = ?")
+    .run(String(installationId).trim());
+}
+
 /** Túneles de una licencia, para el área de cuenta ("mis servidores"). */
 export function listTunnelsForLicense(licenseKey: string): Row[] {
   return getDb()
