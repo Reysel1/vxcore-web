@@ -132,14 +132,32 @@ export async function POST(req: NextRequest) {
     // Primero el DNS y luego el túnel: al revés, si falla el borrado del túnel
     // el subdominio se queda sin destino y sin registro que borrar después.
     await deleteDnsRecord(String(existing.hostname));
-    await cloudflare(
-      `/accounts/${env("CF_ACCOUNT_ID")}/cfd_tunnel/${String(existing.tunnel_id)}`,
-      { method: "DELETE" }
-    ).catch((error) => {
-      // Un túnel que ya no existe en Cloudflare es exactamente el caso que
-      // venimos a arreglar: no puede impedir que se borre la fila.
-      console.warn("[tunnel:rebuild] el túnel ya no estaba en Cloudflare:", error);
+    // Las conexiones primero: Cloudflare se niega a borrar un túnel que aún
+    // tenga alguna registrada, y al rehacer el cloudflared del cliente suele
+    // seguir vivo. Sin esto el borrado fallaba, la fila se iba igual, y el
+    // nombre quedaba ocupado para siempre — que es el 1013 que nos ha traído
+    // hasta aquí.
+    const account = env("CF_ACCOUNT_ID");
+    const tunnelId = String(existing.tunnel_id);
+
+    await cloudflare(`/accounts/${account}/cfd_tunnel/${tunnelId}/connections`, {
+      method: "DELETE",
+    }).catch(() => {
+      // Sin conexiones que limpiar, Cloudflare protesta. No es un problema.
     });
+
+    await cloudflare(`/accounts/${account}/cfd_tunnel/${tunnelId}`, { method: "DELETE" }).catch(
+      (error) => {
+        // Que ya no esté es el caso que venimos a arreglar y no debe frenar el
+        // borrado de la fila. Cualquier otro fallo sí: dejar el túnel vivo y
+        // olvidar la fila es justo cómo se crea un huérfano irrecuperable.
+        if (String(error).includes("1003") || String(error).includes("404")) {
+          console.warn("[tunnel:rebuild] el túnel ya no estaba en Cloudflare:", error);
+          return;
+        }
+        throw error;
+      }
+    );
 
     deleteTunnel(installationId);
     return NextResponse.json({ ok: true });

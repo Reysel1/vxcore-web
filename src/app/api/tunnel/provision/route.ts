@@ -75,17 +75,63 @@ async function cloudflare(path: string, options: RequestInit = {}) {
  * —la app de escritorio los mueve si están ocupados— y desde aquí no hay forma
  * de saber en cuáles han quedado.
  */
+/**
+ * Borra los túneles que ya existan con ese nombre.
+ *
+ * Cloudflare no deja dos túneles con el mismo nombre en una cuenta: responde
+ * 1013 y el aprovisionamiento entero se cae. Y el nombre lo derivamos del id de
+ * instalación, así que si por lo que sea queda uno colgado —un rehacer que no
+ * llegó a completarse, un borrado que Cloudflare rechazó— esa instalación no
+ * puede volver a tener túnel NUNCA. Es un callejón sin salida permanente, y en
+ * casa de un cliente no hay quien lo saque de ahí.
+ *
+ * Las conexiones se limpian antes: Cloudflare se niega a borrar un túnel que
+ * todavía tiene alguna registrada, que es justo lo que pasa cuando el
+ * cloudflared del cliente sigue vivo mientras se rehace.
+ */
+async function removeTunnelsNamed(name: string) {
+  const account = env("CF_ACCOUNT_ID");
+  const existing = await cloudflare(
+    `/accounts/${account}/cfd_tunnel?is_deleted=false&name=${encodeURIComponent(name)}`
+  );
+
+  for (const tunnel of Array.isArray(existing) ? existing : []) {
+    await cloudflare(`/accounts/${account}/cfd_tunnel/${tunnel.id}/connections`, {
+      method: "DELETE",
+    }).catch(() => {
+      // Sin conexiones que limpiar, Cloudflare protesta. No es un problema.
+    });
+    await cloudflare(`/accounts/${account}/cfd_tunnel/${tunnel.id}`, { method: "DELETE" });
+  }
+}
+
 async function createTunnel(name: string) {
   // 32 bytes es lo que espera cloudflared, en base64 porque así viaja igual a
   // la API y al fichero de credenciales del agente.
   const tunnelSecret = randomBytes(32).toString("base64");
+  const body = JSON.stringify({ name, tunnel_secret: tunnelSecret, config_src: "local" });
 
-  const tunnel = await cloudflare(`/accounts/${env("CF_ACCOUNT_ID")}/cfd_tunnel`, {
-    method: "POST",
-    body: JSON.stringify({ name, tunnel_secret: tunnelSecret, config_src: "local" }),
-  });
+  try {
+    const tunnel = await cloudflare(`/accounts/${env("CF_ACCOUNT_ID")}/cfd_tunnel`, {
+      method: "POST",
+      body,
+    });
+    return { tunnelId: String(tunnel.id), tunnelSecret };
+  } catch (error) {
+    // 1013 = ya hay uno con ese nombre. Es recuperable y hay que recuperarlo:
+    // el secreto del viejo no se puede volver a leer, así que la única salida
+    // es borrarlo y crear otro.
+    if (!String(error).includes("1013")) throw error;
 
-  return { tunnelId: String(tunnel.id), tunnelSecret };
+    console.warn(`[tunnel] ya existía un túnel llamado ${name}; se borra y se rehace.`);
+    await removeTunnelsNamed(name);
+
+    const tunnel = await cloudflare(`/accounts/${env("CF_ACCOUNT_ID")}/cfd_tunnel`, {
+      method: "POST",
+      body,
+    });
+    return { tunnelId: String(tunnel.id), tunnelSecret };
+  }
 }
 
 /**
@@ -97,16 +143,33 @@ async function createTunnel(name: string) {
  * proxy es el mecanismo, no un extra.)
  */
 async function createDnsRecord(subdomain: string, tunnelId: string) {
-  await cloudflare(`/zones/${env("CF_ZONE_ID")}/dns_records`, {
-    method: "POST",
-    body: JSON.stringify({
-      type: "CNAME",
-      name: subdomain,
-      content: `${tunnelId}.cfargotunnel.com`,
-      proxied: true,
-      comment: "VXCore — acceso remoto del panel",
-    }),
+  const zone = env("CF_ZONE_ID");
+  const body = JSON.stringify({
+    type: "CNAME",
+    name: subdomain,
+    content: `${tunnelId}.cfargotunnel.com`,
+    proxied: true,
+    comment: "VXCore — acceso remoto del panel",
   });
+
+  try {
+    await cloudflare(`/zones/${zone}/dns_records`, { method: "POST", body });
+  } catch (error) {
+    // 81053 = ya hay un registro con ese nombre. Mismo callejón sin salida que
+    // con el túnel: un CNAME huérfano apuntando a un túnel que ya no existe
+    // dejaría a esa instalación sin poder publicarse nunca más. Se reemplaza.
+    if (!String(error).includes("81053")) throw error;
+
+    console.warn(`[tunnel] ya existía un CNAME para ${subdomain}; se reemplaza.`);
+    const stale = await cloudflare(
+      `/zones/${zone}/dns_records?type=CNAME&name=${encodeURIComponent(subdomain)}`
+    );
+    for (const record of Array.isArray(stale) ? stale : []) {
+      await cloudflare(`/zones/${zone}/dns_records/${record.id}`, { method: "DELETE" });
+    }
+
+    await cloudflare(`/zones/${zone}/dns_records`, { method: "POST", body });
+  }
 }
 
 export async function POST(req: NextRequest) {
