@@ -244,6 +244,8 @@
       {
         "name": "Starter",
         "tagline": "Para empezar a controlar tu servidor",
+        "monthly": 0,
+        "annual": 0,
         "cta": "Empezar gratis",
         "features": [
           "1 servidor conectado",
@@ -256,7 +258,10 @@
       {
         "name": "Pro",
         "tagline": "Para servidores que crecen",
+        "monthly": 24,
+        "annual": 19,
         "cta": "Comprar Pro",
+        "popular": true,
         "features": [
           "Servidores ilimitados",
           "Agente IA completo",
@@ -269,6 +274,8 @@
       {
         "name": "Enterprise",
         "tagline": "Para proyectos y equipos grandes",
+        "monthly": null,
+        "annual": null,
         "cta": "Hablar con ventas",
         "features": [
           "Todo lo de Pro",
