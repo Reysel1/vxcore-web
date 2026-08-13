@@ -12,98 +12,29 @@ import {
   Workflow,
 } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const VIEWS = [
-  {
-    id: "console",
-    label: "Consola RCON",
-    Icon: Radio,
-    file: "/panel/cmd.png",
-    w: 1176,
-    h: 880,
-    alt: "VXCore panel — Consola RCON interactiva con salida en vivo del servidor FXServer",
-  },
-  {
-    id: "servers",
-    label: "Servidores",
-    Icon: Server,
-    file: "/panel/server.png",
-    w: 1181,
-    h: 866,
-    alt: "VXCore panel — Gestión de servidores con estado, métricas y acciones",
-  },
-  {
-    id: "servers-list",
-    label: "Lista de servidores",
-    Icon: ServerCog,
-    file: "/panel/servers.png",
-    w: 1249,
-    h: 930,
-    alt: "VXCore panel — Lista de servidores conectados con estado y métricas",
-  },
-  {
-    id: "database",
-    label: "Base de Datos",
-    Icon: Database,
-    file: "/panel/db.png",
-    w: 1647,
-    h: 995,
-    alt: "VXCore panel — Base de datos del servidor con tablas y consultas",
-  },
-  {
-    id: "editor",
-    label: "Editor IA",
-    Icon: FileCode2,
-    file: "/panel/editorai.png",
-    w: 1658,
-    h: 1005,
-    alt: "VXCore panel — Editor de recursos con el agente de IA integrado",
-  },
-  {
-    id: "events",
-    label: "Eventos",
-    Icon: Activity,
-    file: "/panel/eventspt1.png",
-    w: 1920,
-    h: 1040,
-    alt: "VXCore panel — Eventos del servidor con métricas en tiempo real",
-  },
-  {
-    id: "events2",
-    label: "Eventos 2",
-    Icon: BarChart3,
-    file: "/panel/eventsp2.png",
-    w: 1920,
-    h: 1036,
-    alt: "VXCore panel — Segunda vista de eventos y actividad del servidor",
-  },
-  {
-    id: "flows",
-    label: "Flujos",
-    Icon: Workflow,
-    file: "/panel/flujp.png",
-    w: 886,
-    h: 871,
-    maxH: 640,
-    alt: "VXCore panel — Creador de flujos y automatizaciones con el agente IA",
-  },
-  {
-    id: "board",
-    label: "Tablero",
-    Icon: SquareKanban,
-    file: "/panel/trello.png",
-    w: 1164,
-    h: 856,
-    alt: "VXCore panel — Tablero kanban para coordinar el trabajo del equipo",
-  },
+const VIEW_DEFS = [
+  { id: "console", Icon: Radio, file: "/panel/cmd.png", w: 1176, h: 880 },
+  { id: "servers", Icon: Server, file: "/panel/server.png", w: 1181, h: 866 },
+  { id: "servers-list", Icon: ServerCog, file: "/panel/servers.png", w: 1249, h: 930 },
+  { id: "database", Icon: Database, file: "/panel/db.png", w: 1647, h: 995 },
+  { id: "editor", Icon: FileCode2, file: "/panel/editorai.png", w: 1658, h: 1005 },
+  { id: "events", Icon: Activity, file: "/panel/eventspt1.png", w: 1920, h: 1040 },
+  { id: "events2", Icon: BarChart3, file: "/panel/eventsp2.png", w: 1920, h: 1036 },
+  { id: "flows", Icon: Workflow, file: "/panel/flujp.png", w: 886, h: 871, maxH: 640 },
+  { id: "board", Icon: SquareKanban, file: "/panel/trello.png", w: 1164, h: 856 },
 ];
 
 export function PanelDemo() {
-  const [active, setActive] = React.useState(VIEWS[0].id);
-  const view = VIEWS.find((v) => v.id === active) ?? VIEWS[0];
+  const t = useTranslations("showcase.panel");
+  const views = t.raw("views") as { label: string; alt: string }[];
+  const [active, setActive] = React.useState(VIEW_DEFS[0].id);
+  const view = VIEW_DEFS.find((v) => v.id === active) ?? VIEW_DEFS[0];
+  const activeLabel = views.find((_, i) => VIEW_DEFS[i].id === active)?.label;
 
   return (
     <div id="demo" className="relative mx-auto mt-16 w-full max-w-6xl">
@@ -124,10 +55,10 @@ export function PanelDemo() {
         {/* View switcher */}
         <div
           role="tablist"
-          aria-label="Selecciona una vista del panel"
+          aria-label={t("tablistAria")}
           className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/20 px-3 py-2"
         >
-          {VIEWS.map(({ id, label, Icon }) => (
+          {VIEW_DEFS.map(({ id, Icon }, i) => (
             <button
               key={id}
               id={`tab-${id}`}
@@ -143,7 +74,7 @@ export function PanelDemo() {
               )}
             >
               <Icon className="size-3.5" />
-              {label}
+              {views[i]?.label}
             </button>
           ))}
         </div>
@@ -160,15 +91,15 @@ export function PanelDemo() {
           <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
             <div className="absolute -inset-y-10 -left-1/2 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent transition-transform duration-1000 group-hover/frame:translate-x-[420%]" />
           </div>
-          {VIEWS.map(({ id, file, alt }) => {
-            const fits = VIEWS.find((v) => v.id === id)?.maxH != null;
+          {VIEW_DEFS.map(({ id, file, maxH }, i) => {
+            const fits = maxH != null;
             return (
               <Image
                 key={id}
                 src={file}
-                alt={alt}
+                alt={views[i]?.alt ?? activeLabel ?? ""}
                 fill
-                priority={id === VIEWS[0].id}
+                priority={id === VIEW_DEFS[0].id}
                 quality={100}
                 sizes="(min-width: 1152px) 1152px, 100vw"
                 aria-hidden={active !== id}

@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { Eye, KeyRound, Lock, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Link, getPathname } from "@/i18n/navigation";
 
 function GoogleIcon() {
   return (
@@ -44,33 +45,6 @@ function DiscordIcon() {
   );
 }
 
-/**
- * Garantías reales, no promesas de marketing: cada línea se corresponde con
- * algo comprobable en el código o en las cabeceras que sirve la web.
- */
-const GUARANTEES = [
-  {
-    Icon: KeyRound,
-    title: "Tu contraseña no pasa por aquí",
-    text: "El inicio de sesión ocurre en Google o Discord. Nosotros solo recibimos la confirmación de que eres tú.",
-  },
-  {
-    Icon: Eye,
-    title: "Permisos mínimos",
-    text: "Pedimos tu nombre, tu email y tu foto de perfil. Nada más: ni contactos, ni servidores, ni permiso para publicar.",
-  },
-  {
-    Icon: Lock,
-    title: "Sesión cifrada",
-    text: "La cookie de sesión es HttpOnly y Secure: viaja solo por HTTPS y ningún script del navegador puede leerla.",
-  },
-  {
-    Icon: ShieldCheck,
-    title: "Revocable cuando quieras",
-    text: "Puedes retirarle el acceso a VXCore desde los ajustes de tu cuenta de Google o Discord, sin pasar por nosotros.",
-  },
-];
-
 export function LoginDialog({
   open,
   onOpenChange,
@@ -78,7 +52,16 @@ export function LoginDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const provider = (name: string) => signIn(name, { callbackUrl: "/dashboard" });
+  const t = useTranslations("login");
+  const locale = useLocale();
+  const guarantees = t.raw("guarantees") as {
+    title: string;
+    text: string;
+  }[];
+  const guaranteeIcons = [KeyRound, Eye, Lock, ShieldCheck];
+  const dashboardPath = getPathname({ href: "/dashboard", locale });
+
+  const provider = (name: string) => signIn(name, { callbackUrl: dashboardPath });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,50 +75,51 @@ export function LoginDialog({
               <ShieldCheck className="size-5" />
             </span>
             <h3 className="mt-4 font-heading text-lg font-semibold text-zinc-50">
-              Entrar es seguro
+              {t("safeTitle")}
             </h3>
             <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-              Usamos el inicio de sesión de Google y Discord para no manejar
-              nunca tus credenciales.
+              {t("safeText")}
             </p>
 
             <ul className="mt-6 space-y-4">
-              {GUARANTEES.map(({ Icon, title, text }) => (
-                <li key={title} className="flex items-start gap-3">
-                  <Icon className="mt-0.5 size-4 shrink-0 text-emerald-400" />
-                  <div>
-                    <div className="text-xs font-medium text-zinc-100">
-                      {title}
+              {guarantees.map(({ title, text }, i) => {
+                const Icon = guaranteeIcons[i] ?? ShieldCheck;
+                return (
+                  <li key={title} className="flex items-start gap-3">
+                    <Icon className="mt-0.5 size-4 shrink-0 text-emerald-400" />
+                    <div>
+                      <div className="text-xs font-medium text-zinc-100">
+                        {title}
+                      </div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
+                        {text}
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
-                      {text}
-                    </p>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
           <p className="mt-8 text-[11px] leading-relaxed text-zinc-500">
-            Detallamos qué datos tratamos y durante cuánto tiempo en la{" "}
-            <Link
-              href="/privacidad"
-              className="text-zinc-300 underline underline-offset-4 transition-colors hover:text-zinc-100"
-            >
-              política de privacidad
-            </Link>
-            .
+            {t.rich("privacyLine", {
+              privacy: (chunks) => (
+                <Link
+                  href="/privacidad"
+                  className="text-zinc-300 underline underline-offset-4 transition-colors hover:text-zinc-100"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </aside>
 
         {/* Columna de acceso */}
         <div className="flex flex-col justify-center p-7">
           <DialogHeader>
-            <DialogTitle className="text-xl">Inicia sesión en VXCore</DialogTitle>
-            <DialogDescription>
-              Conecta tu cuenta para gestionar tu servidor desde el panel. Elige
-              cómo quieres entrar:
-            </DialogDescription>
+            <DialogTitle className="text-xl">{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
           <div className="mt-6 flex flex-col gap-2.5">
@@ -145,7 +129,7 @@ export function LoginDialog({
               className="h-11 gap-2.5 text-sm"
             >
               <GoogleIcon />
-              Continuar con Google
+              {t("google")}
             </Button>
             <Button
               variant="outline"
@@ -153,7 +137,7 @@ export function LoginDialog({
               className="h-11 gap-2.5 text-sm"
             >
               <DiscordIcon />
-              Continuar con Discord
+              {t("discord")}
             </Button>
           </div>
 
@@ -161,28 +145,28 @@ export function LoginDialog({
               esencial se repite aquí en corto. */}
           <div className="mt-5 flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground sm:hidden">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-            <span>
-              Tu contraseña no pasa por VXCore: el acceso lo gestionan Google y
-              Discord con los permisos mínimos.
-            </span>
+            <span>{t("mobileNote")}</span>
           </div>
 
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Al continuar aceptas los{" "}
-            <Link
-              href="/terminos"
-              className="underline underline-offset-4 transition-colors hover:text-foreground"
-            >
-              términos
-            </Link>{" "}
-            y la{" "}
-            <Link
-              href="/privacidad"
-              className="underline underline-offset-4 transition-colors hover:text-foreground"
-            >
-              política de privacidad
-            </Link>
-            .
+            {t.rich("termsLine", {
+              terms: (chunks) => (
+                <Link
+                  href="/terminos"
+                  className="underline underline-offset-4 transition-colors hover:text-foreground"
+                >
+                  {chunks}
+                </Link>
+              ),
+              privacy: (chunks) => (
+                <Link
+                  href="/privacidad"
+                  className="underline underline-offset-4 transition-colors hover:text-foreground"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </div>
       </DialogContent>

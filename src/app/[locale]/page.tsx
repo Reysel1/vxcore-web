@@ -1,3 +1,5 @@
+import { setRequestLocale } from "next-intl/server";
+
 import { Navbar } from "@/components/site/navbar";
 import { Hero } from "@/components/site/hero";
 import { UrantixBanner } from "@/components/site/urantix-banner";
@@ -11,7 +13,14 @@ import { Cta } from "@/components/site/cta";
 import { Footer } from "@/components/site/footer";
 import { StructuredData } from "@/components/site/structured-data";
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   return (
     <>
       <StructuredData />

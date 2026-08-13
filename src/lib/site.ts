@@ -7,6 +7,29 @@ export const SITE_URL =
 
 export const SITE_NAME = "VXCore";
 
+/**
+ * Ruta localizada para un idioma. El español (idioma por defecto) no lleva
+ * prefijo; inglés y francés van prefijados (`/en`, `/fr`).
+ */
+export function localizedPath(locale: string, path: string): string {
+  return locale === "es" ? path : `/${locale}${path}`;
+}
+
+/**
+ * Objeto `alternates` para generateMetadata: canonical (del idioma actual) +
+ * hreflang de los tres idiomas para una misma ruta.
+ */
+export function localizedAlternates(locale: string, path: string) {
+  return {
+    canonical: localizedPath(locale, path),
+    languages: {
+      es: localizedPath("es", path),
+      en: localizedPath("en", path),
+      fr: localizedPath("fr", path),
+    },
+  };
+}
+
 export const SOCIAL_LINKS = [
   { name: "X", href: "https://x.com/vxcorex", icon: "x" },
   { name: "YouTube", href: "https://youtube.com/@VxCorex", icon: "youtube" },
@@ -16,14 +39,12 @@ export const SOCIAL_LINKS = [
 
 export type SocialIconName = (typeof SOCIAL_LINKS)[number]["icon"];
 
-export const LEGAL_LINKS = [
-  { label: "Términos", href: "/terminos" },
-  { label: "Privacidad", href: "/privacidad" },
-  { label: "Cookies", href: "/cookies" },
-] as const;
-
 /**
- * Fecha de la última revisión de los textos legales. Se muestra en las páginas
- * y hay que actualizarla cuando cambie el contenido.
+ * Rutas legales. Las etiquetas visibles viven en los mensajes de i18n
+ * (`legal.nav`), aquí solo queda el orden y el href.
  */
-export const LEGAL_UPDATED_AT = "7 de agosto de 2026";
+export const LEGAL_ROUTES = [
+  { href: "/terminos" },
+  { href: "/privacidad" },
+  { href: "/cookies" },
+] as const;

@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,60 +9,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Reveal } from "@/components/site/reveal";
 import { SectionHeading } from "@/components/site/section-heading";
+import { Link, useRouter } from "@/i18n/navigation";
 import { startCheckout } from "@/lib/checkout";
 import { cn } from "@/lib/utils";
 
-const PLANS = [
-  {
-    name: "Starter",
-    tagline: "Para empezar a controlar tu servidor",
-    monthly: 0,
-    annual: 0,
-    cta: "Empezar gratis",
-    features: [
-      "1 servidor conectado",
-      "Consola RCON interactiva",
-      "Logs de las últimas 24 h",
-      "Agente IA básico",
-      "Soporte de la comunidad",
-    ],
-  },
-  {
-    name: "Pro",
-    tagline: "Para servidores que crecen",
-    monthly: 24,
-    annual: 19,
-    cta: "Comprar Pro",
-    popular: true,
-    features: [
-      "Servidores ilimitados",
-      "Agente IA completo",
-      "Histórico de logs en disco",
-      "Marketplace integrado",
-      "Automatizaciones",
-      "Soporte prioritario",
-    ],
-  },
-  {
-    name: "Enterprise",
-    tagline: "Para proyectos y equipos grandes",
-    monthly: null,
-    annual: null,
-    cta: "Hablar con ventas",
-    features: [
-      "Todo lo de Pro",
-      "Instalación asistida",
-      "Acceso para todo tu equipo",
-      "SLA de soporte garantizado",
-      "Recursos Urantix premium",
-    ],
-  },
-];
+type Plan = {
+  name: string;
+  tagline: string;
+  monthly: number | null;
+  annual: number | null;
+  cta: string;
+  popular?: boolean;
+  features: string[];
+};
 
 export function Pricing() {
+  const t = useTranslations("pricing");
   const router = useRouter();
   const [annual, setAnnual] = React.useState(true);
   const [checkingOut, setCheckingOut] = React.useState(false);
+
+  const plans = t.raw("plans") as Plan[];
 
   // Lanza el checkout de Stripe. Si no hay sesión, primero se pide login y
   // después se retoma el pago solo (con la intención ?pay=1).
@@ -71,7 +38,7 @@ export function Pricing() {
     setCheckingOut(true);
     const result = await startCheckout();
     if (result === "login") {
-      router.push("/?login=1&pay=1");
+      router.push({ pathname: "/", query: { login: "1", pay: "1" } });
     }
     setCheckingOut(false);
   }
@@ -80,14 +47,14 @@ export function Pricing() {
     <section id="pricing" className="relative scroll-mt-24 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="Precios"
+          eyebrow={t("eyebrow")}
           title={
             <>
-              Precios simples para{" "}
-              <span className="text-gradient">tu servidor</span>
+              {t("title1")}{" "}
+              <span className="text-gradient">{t("titleAccent")}</span>
             </>
           }
-          description="Empieza gratis y actualiza cuando lo necesites. Sin costes ocultos, cancela cuando quieras."
+          description={t("description")}
         />
 
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -99,12 +66,12 @@ export function Pricing() {
                   !annual ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                Mensual
+                {t("monthly")}
               </span>
               <Switch
                 checked={annual}
                 onCheckedChange={setAnnual}
-                aria-label="Cambiar a facturación anual"
+                aria-label={t("billingAria")}
               />
               <span
                 className={cn(
@@ -112,17 +79,17 @@ export function Pricing() {
                   annual ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                Anual
+                {t("annual")}
               </span>
               <span className="text-xs font-medium text-muted-foreground">
-                ahorra 20%
+                {t("save")}
               </span>
             </div>
           </Reveal>
         </div>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-stretch">
-          {PLANS.map((plan, i) => {
+          {plans.map((plan, i) => {
             const price = annual ? plan.annual : plan.monthly;
             return (
               <Reveal key={plan.name} delay={i * 100} className="h-full">
@@ -151,7 +118,7 @@ export function Pricing() {
                     <div className="flex items-baseline gap-1.5">
                       {price === null ? (
                         <span className="font-heading text-4xl font-semibold tracking-tight">
-                          A medida
+                          {t("custom")}
                         </span>
                       ) : (
                         <>
@@ -159,7 +126,7 @@ export function Pricing() {
                             ${price}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            / mes
+                            {t("perMonth")}
                           </span>
                         </>
                       )}
@@ -187,7 +154,7 @@ export function Pricing() {
                         {checkingOut ? (
                           <>
                             <Loader2 className="size-4 animate-spin" />
-                            Abriendo pago…
+                            {t("opening")}
                           </>
                         ) : (
                           <>
@@ -215,10 +182,10 @@ export function Pricing() {
                         variant="outline"
                         className="group/btn h-10 w-full gap-2"
                       >
-                        <a href="/dashboard">
+                        <Link href="/dashboard">
                           {plan.cta}
                           <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-0.5" />
-                        </a>
+                        </Link>
                       </Button>
                     )}
                   </CardContent>
@@ -231,8 +198,7 @@ export function Pricing() {
         <Reveal delay={200}>
           <p className="mt-10 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
             <ShieldCheck className="size-4 text-foreground/50" />
-            Todos los planes incluyen cifrado de extremo a extremo y soporte
-            real de la gente que construye VXCore.
+            {t("guarantee")}
           </p>
         </Reveal>
       </div>

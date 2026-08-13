@@ -1,0 +1,1092 @@
+{
+  "meta": {
+    "title": "VXCore — El sistema operativo de tu servidor FXServer",
+    "description": "VXCore une servidores, recursos, logs y automatizaciones en un solo panel — con un agente de IA que monitoriza, edita y responde a tu servidor en tiempo real.",
+    "structuredDescription": "Panel de control para servidores FiveM (FXServer): consola RCON, logs, base de datos, automatizaciones y un agente de IA conectado a tu servidor.",
+    "structuredSubcategory": "Panel de control de servidores de juego"
+  },
+  "common": {
+    "back": "Volver",
+    "lastUpdated": "Última actualización: {date}",
+    "login": "Iniciar sesión",
+    "startFree": "Empezar gratis",
+    "logout": "Salir",
+    "closeSession": "Cerrar sesión",
+    "openMenu": "Abrir menú",
+    "homeAria": "VXCore — inicio",
+    "language": "Idioma"
+  },
+  "nav": {
+    "product": "Producto",
+    "features": "Características",
+    "pricing": "Precios",
+    "faq": "FAQ",
+    "contact": "Contacto",
+    "docs": "Documentación",
+    "panel": "Panel",
+    "goToPanel": "Ir a mi panel",
+    "login": "Iniciar sesión",
+    "startFree": "Empezar gratis",
+    "logout": "Salir",
+    "closeSession": "Cerrar sesión",
+    "homeAria": "VXCore — inicio",
+    "openMenu": "Abrir menú",
+    "userAria": "Usuario"
+  },
+  "hero": {
+    "title1": "Controla tu servidor FiveM desde",
+    "titleAccent": "un único núcleo",
+    "description": "VXCore une servidores, recursos, logs y automatizaciones en un solo panel — con un agente de IA que monitoriza, edita y responde a tu servidor en tiempo real.",
+    "startFree": "Empezar gratis",
+    "viewDemo": "Ver demostración"
+  },
+  "features": {
+    "eyebrow": "Características",
+    "title1": "Todo lo que tu servidor necesita.",
+    "titleAccent": "Nada de lo que no.",
+    "description": "VXCore convierte la gestión de tu servidor FXServer en una experiencia simple, rápida y segura — desde la primera conexión hasta el escalado de tu comunidad.",
+    "cta": "Ver demostración",
+    "items": [
+      {
+        "title": "Consola RCON interactiva",
+        "description": "Terminal bidireccional en tiempo real por WebSocket. Envía comandos y ve la salida al instante, con historial y acciones rápidas."
+      },
+      {
+        "title": "Agente VXCore",
+        "description": "Un copiloto de IA conectado a tu servidor: monitoriza, explica errores y propone cambios. Nada se guarda sin tu permiso."
+      },
+      {
+        "title": "Logs globales",
+        "description": "Toda la salida de tu servidor filtrada por nivel y recurso. Histórico en disco y exportación con un clic."
+      },
+      {
+        "title": "Editor de recursos",
+        "description": "Explora y edita tus recursos desde el panel, sin FTP ni SSH. Guarda con copia de seguridad automática."
+      },
+      {
+        "title": "Marketplace integrado",
+        "description": "Compra e instala recursos y scripts desde la tienda Urantix en dos clics, sin salir del panel."
+      },
+      {
+        "title": "Monitorización 24/7",
+        "description": "Estado de tu servidor en tiempo real: uptime, jugadores y latencia monitorizados de forma continua."
+      },
+      {
+        "title": "Automatizaciones",
+        "description": "Reinicios, comandos y acciones programadas. Define reglas y deja que VXCore se encargue del resto."
+      }
+    ],
+    "mock": {
+      "saved": "guardado",
+      "agentDetected": "Detecté que **oxmysql** perdió la conexión a las 03:12. ¿Quieres que revise la config?",
+      "explain": "Explicar",
+      "reconnect": "Reconectar",
+      "nightRestart": "Reinicio nocturno",
+      "autoRestart": "Restart qb-core automático",
+      "ifHangs": "si se cuelga · cada 10 min",
+      "uptime": "uptime",
+      "online": "En línea",
+      "install": "instalar",
+      "live": "en vivo · red VXCore",
+      "last12h": "últimas 12 horas",
+      "t247": "24/7"
+    }
+  },
+  "showcase": {
+    "eyebrow": "Producto",
+    "title1": "Un panel.",
+    "titleAccent": "Todo tu servidor.",
+    "description": "Descubre lo que hace VXCore por tu servidor FXServer, minuto a minuto. Prueba los módulos de abajo: son interactivos.",
+    "console": {
+      "label": "Consola RCON",
+      "headline": "Control total de tu servidor, en tiempo real",
+      "copy": "Una terminal bidireccional que conecta tu navegador con el FXServer por WebSocket. Lo que haces se ve al instante, sin recargar la página.",
+      "points": [
+        "WebSocket bidireccional — comandos y salida en vivo",
+        "Acciones rápidas — refresh, status, restart, ensure…",
+        "Historial de comandos navegable con las flechas ↕",
+        "Control de acceso: solo tú y tu equipo ejecutan"
+      ],
+      "connected": "WebSocket conectado",
+      "events": "{count} eventos registrados",
+      "actions": "Acciones",
+      "placeholder": "Escribe un comando RCON…",
+      "commandAria": "Comando RCON",
+      "runAria": "Ejecutar comando",
+      "executed": "[server] comando \"{cmd}\" ejecutado sin errores"
+    },
+    "logs": {
+      "label": "Logs globales",
+      "headline": "Nunca más administres a ciegas",
+      "copy": "VXCore captura toda la salida de tu servidor, la organiza y te la presenta filtrable. Encuentra el error que te quita el sueño en segundos.",
+      "points": [
+        "Filtros por nivel con contadores en vivo",
+        "Búsqueda instantánea por recurso o texto",
+        "Histórico en disco: consulta días atrás",
+        "El agente te explica qué falla y cómo arreglarlo"
+      ],
+      "all": "Todos",
+      "searchPlaceholder": "Buscar en logs…",
+      "searchAria": "Buscar en logs",
+      "level": "Nivel",
+      "resource": "Recurso",
+      "message": "Mensaje",
+      "time": "Hora",
+      "empty": "Sin resultados para ese filtro.",
+      "rows": [
+        { "message": "conexión perdida con el servidor de base de datos" },
+        { "message": "query lenta detectada · 1.2s" },
+        { "message": "resource esx loaded · 25 scripts" },
+        { "message": "jugador conectado · license validada" },
+        { "message": "CREATE TABLE utx_dealership_financing ok" },
+        { "message": "heartbeat retrasado · 2.4s" },
+        { "message": "servidor iniciado · 38 recursos" }
+      ]
+    },
+    "agent": {
+      "label": "Agente IA",
+      "headline": "Un copiloto dentro de tu servidor",
+      "copy": "El agente VXCore entiende tu servidor: lee recursos, detecta problemas y propone cambios. Tú decides siempre qué se aplica.",
+      "points": [
+        "Lee y edita recursos — fxmanifest, scripts, configs",
+        "Explica cualquier cosa: qué hace o por qué falla",
+        "Nada se escribe en producción sin tu permiso",
+        "Siempre queda una copia para revertir"
+      ],
+      "name": "Agente VXCore",
+      "connected": "conectado a tu servidor",
+      "readOnly": "solo lectura · tú decides",
+      "initial1": "Hola, soy el agente VXCore. Detecté que oxmysql perdió la conexión 2 veces en la última hora. ¿Quieres que revise la config de la base de datos?",
+      "initial1Actions": ["Revisar config", "Ver logs"],
+      "initial2": "Sí, ¿qué puedo hacer para evitar que se caiga?",
+      "replyConfig": "El problema suele ser max_connections. Te recomiendo subirlo a 200 y añadir un healthcheck cada 30s. He preparado el cambio en el editor — puedes revisarlo antes de guardar.",
+      "replyCrash": "He analizado los logs: el crash viene de un recurso que accede a la BD sin reintentos. Puedo envolver esa llamada con un retry automático (con copia de seguridad incluida).",
+      "replyRestart": "Puedo programar un reinicio nocturno a las 04:00 con aviso en el Discord de tu comunidad. ¿Lo activo?",
+      "replyDefault": "He revisado el estado del servidor: todo en orden. ¿Quieres que mire un recurso, los logs o te prepare una automatización?",
+      "applied": "Listo: el cambio está guardado con una copia de seguridad. Puedes revertirlo desde el editor en cualquier momento.",
+      "applyActions": ["Aplicar con copia", "Ver diff"],
+      "placeholder": "Pregúntale al agente…",
+      "askAria": "Pregunta al agente",
+      "sendAria": "Enviar mensaje"
+    },
+    "panel": {
+      "tablistAria": "Selecciona una vista del panel",
+      "views": [
+        { "label": "Consola RCON", "alt": "VXCore panel — Consola RCON interactiva con salida en vivo del servidor FXServer" },
+        { "label": "Servidores", "alt": "VXCore panel — Gestión de servidores con estado, métricas y acciones" },
+        { "label": "Lista de servidores", "alt": "VXCore panel — Lista de servidores conectados con estado y métricas" },
+        { "label": "Base de Datos", "alt": "VXCore panel — Base de datos del servidor con tablas y consultas" },
+        { "label": "Editor IA", "alt": "VXCore panel — Editor de recursos con el agente de IA integrado" },
+        { "label": "Eventos", "alt": "VXCore panel — Eventos del servidor con métricas en tiempo real" },
+        { "label": "Eventos 2", "alt": "VXCore panel — Segunda vista de eventos y actividad del servidor" },
+        { "label": "Flujos", "alt": "VXCore panel — Creador de flujos y automatizaciones con el agente IA" },
+        { "label": "Tablero", "alt": "VXCore panel — Tablero kanban para coordinar el trabajo del equipo" }
+      ]
+    }
+  },
+  "testimonials": {
+    "eyebrow": "Testimonios",
+    "title1": "La gente que mantiene servidores",
+    "titleAccent": "nos entiende",
+    "items": [
+      {
+        "quote": "La consola RCON por web me cambió la vida. Puedo gestionar el servidor desde el móvil cuando estoy fuera, sin abrir nada más.",
+        "name": "Dani",
+        "role": "Owner · Proyecto Roleplay",
+        "initials": "DN"
+      },
+      {
+        "quote": "El agente me explicó por qué un recurso crasheaba a las 3 de la mañana. Lo arreglé en cinco minutos. Vale por sí solo el precio.",
+        "name": "Marcos",
+        "role": "Desarrollador · SCRIPTS",
+        "initials": "MC"
+      },
+      {
+        "quote": "Los logs filtrables y el histórico en disco son una pasada. Por fin sé qué pasa en mi servidor sin mirar archivos a mano.",
+        "name": "Laura",
+        "role": "Admin · Comunidad RP",
+        "initials": "LR"
+      },
+      {
+        "quote": "Instalé UrantixDealership desde el marketplace en dos clics. Antes eso era una tarde entera de FTP y configuraciones.",
+        "name": "Álex",
+        "role": "Owner · Servidor FiveM",
+        "initials": "AX"
+      },
+      {
+        "quote": "La automatización de reinicios nos quitó un trabajo de todas las noches. El servidor responde solo cuando algo se cuelga.",
+        "name": "Sofía",
+        "role": "DevOps · Roleplay urbano",
+        "initials": "SF"
+      },
+      {
+        "quote": "Nada se escribe en producción sin tu permiso y siempre hay copia. Es la primera herramienta que usan de verdad en todo el equipo.",
+        "name": "Javi",
+        "role": "Líder de desarrollo · Urantix",
+        "initials": "JV"
+      }
+    ]
+  },
+  "pricing": {
+    "eyebrow": "Precios",
+    "title1": "Precios simples para",
+    "titleAccent": "tu servidor",
+    "description": "Empieza gratis y actualiza cuando lo necesites. Sin costes ocultos, cancela cuando quieras.",
+    "monthly": "Mensual",
+    "annual": "Anual",
+    "save": "ahorra 20%",
+    "billingAria": "Cambiar a facturación anual",
+    "perMonth": "/ mes",
+    "custom": "A medida",
+    "opening": "Abriendo pago…",
+    "guarantee": "Todos los planes incluyen cifrado de extremo a extremo y soporte real de la gente que construye VXCore.",
+    "plans": [
+      {
+        "name": "Starter",
+        "tagline": "Para empezar a controlar tu servidor",
+        "cta": "Empezar gratis",
+        "features": [
+          "1 servidor conectado",
+          "Consola RCON interactiva",
+          "Logs de las últimas 24 h",
+          "Agente IA básico",
+          "Soporte de la comunidad"
+        ]
+      },
+      {
+        "name": "Pro",
+        "tagline": "Para servidores que crecen",
+        "cta": "Comprar Pro",
+        "features": [
+          "Servidores ilimitados",
+          "Agente IA completo",
+          "Histórico de logs en disco",
+          "Marketplace integrado",
+          "Automatizaciones",
+          "Soporte prioritario"
+        ]
+      },
+      {
+        "name": "Enterprise",
+        "tagline": "Para proyectos y equipos grandes",
+        "cta": "Hablar con ventas",
+        "features": [
+          "Todo lo de Pro",
+          "Instalación asistida",
+          "Acceso para todo tu equipo",
+          "SLA de soporte garantizado",
+          "Recursos Urantix premium"
+        ]
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title1": "Preguntas,",
+    "titleAccent": "respondidas",
+    "description": "Todo lo que necesitas saber antes de conectar tu servidor. ¿No encuentras tu respuesta? Habla directamente con el equipo.",
+    "moreTitle": "¿Tienes más dudas?",
+    "moreText": "Nuestro equipo responde en menos de 2 horas en el Discord oficial de Urantix. También tienes la documentación completa.",
+    "joinDiscord": "Unirme al Discord",
+    "documentation": "Documentación",
+    "items": [
+      {
+        "q": "¿Funciona con mi servidor FXServer?",
+        "a": "Sí. VXCore se conecta a cualquier servidor FXServer moderno (txAdmin, standalone o tu propia configuración) a través de su consola RCON y WebSocket. En menos de 5 minutos tu servidor aparece en el panel."
+      },
+      {
+        "q": "¿Necesito conocimientos técnicos?",
+        "a": "No. Si sabes usar un navegador, sabes usar VXCore. La consola, los logs y el editor están pensados para que cualquiera del equipo pueda administrar sin miedo a romper nada."
+      },
+      {
+        "q": "¿Puede el agente de IA romper mi servidor?",
+        "a": "No. El agente solo carga los cambios en el editor: nada se escribe en producción hasta que tú pulsas Guardar, y siempre queda una copia de la versión anterior para revertir."
+      },
+      {
+        "q": "¿Qué pasa con mis recursos de la tienda Urantix?",
+        "a": "El marketplace de VXCore está integrado con la tienda Urantix: compra, descarga e instala recursos directamente en tu servidor desde el panel, sin FTP ni despliegues manuales."
+      },
+      {
+        "q": "¿Puedo cambiar o cancelar el plan cuando quiera?",
+        "a": "Por supuesto. Sube, baja o cancela en un clic desde tu panel de facturación. Los planes anuales se prorratean si cambias antes de tiempo."
+      },
+      {
+        "q": "¿Qué soporte incluye?",
+        "a": "El plan Pro incluye soporte prioritario con una primera respuesta media de menos de 2 horas. Todos los planes acceden a la documentación, la comunidad y el Discord oficial de Urantix."
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contacto",
+    "title1": "Habla con el",
+    "titleAccent": "equipo",
+    "description": "¿Algo no va, necesitas una licencia de prueba o quieres proponer una función? Escríbenos y te lo resolvemos.",
+    "channels": [
+      {
+        "title": "Habla con el staff",
+        "description": "Tu mensaje llega directo al equipo que construye VXCore. Respondemos personalmente, sin bots."
+      },
+      {
+        "title": "Respuesta en menos de 24 h",
+        "description": "Los mensajes se atienden en orden de llegada, de lunes a domingo."
+      },
+      {
+        "title": "De todo",
+        "description": "Bugs, ideas, facturación, licencias o simplemente saludar. Todo es bienvenido."
+      }
+    ],
+    "form": {
+      "honeypot": "No rellenes este campo",
+      "name": "Tu nombre",
+      "namePlaceholder": "Alex Rivera",
+      "email": "Tu email",
+      "emailPlaceholder": "tu@email.com",
+      "subject": "Asunto",
+      "subjectPlaceholder": "¿En qué podemos ayudarte?",
+      "message": "Mensaje",
+      "messagePlaceholder": "Cuéntanos con detalle qué necesitas…",
+      "send": "Enviar mensaje",
+      "sending": "Enviando…",
+      "note": "Tu mensaje lo lee el equipo real de VXCore. Nunca lo usamos para spam."
+    },
+    "toasts": {
+      "error": "No se pudo enviar el mensaje.",
+      "success": "Mensaje enviado. Te respondemos muy pronto.",
+      "network": "Error de red. Inténtalo de nuevo."
+    }
+  },
+  "cta": {
+    "title": "Tu servidor merece su propio sistema operativo",
+    "description": "Entra en tu panel, conecta tu FXServer y descarga el instalador de VXCore. Empezar es gratis — sin tarjeta de crédito.",
+    "cta": "Entrar en mi panel",
+    "bullets": ["Plan gratis para siempre", "Sin tarjeta de crédito", "Cancela cuando quieras"]
+  },
+  "footer": {
+    "description": "El sistema operativo de tu servidor FXServer. Gestiona, monitoriza y automatiza desde un solo panel.",
+    "visitStore": "Visita la tienda de Urantix",
+    "storeAria": "Visita la tienda de Urantix (se abre en una pestaña nueva)",
+    "socialAria": "VXCore en {name} (se abre en una pestaña nueva)",
+    "columns": [
+      {
+        "title": "Producto",
+        "links": ["Consola RCON", "Logs globales", "Agente IA", "Editor", "Automatizaciones"]
+      },
+      {
+        "title": "Tienda",
+        "links": ["Marketplace", "Recursos", "Scripts", "Configuraciones", "Soporte"]
+      },
+      {
+        "title": "Recursos",
+        "links": ["Documentación", "Guías de inicio", "API", "Comunidad", "Estado"]
+      }
+    ],
+    "legal": "Legal",
+    "rights": "© {year} VXCore · Un producto de Urantix. Todos los derechos reservados.",
+    "madeWith": "Hecho con ❤️ para la comunidad FiveM"
+  },
+  "banner": {
+    "aria": "Urantix × VXCore asociación oficial — visita la tienda de Urantix (se abre en una pestaña nueva)",
+    "alt": "Banner de la asociación oficial Urantix × VXCore",
+    "title1": "Compra el universo VXCore en",
+    "titleAccent": "Urantix",
+    "description": "Apps, temas, plantillas y herramientas creadas por el equipo de VXCore — disponibles en exclusiva en la tienda Urantix. Una cuenta, todos los productos.",
+    "visitStore": "Visitar la tienda",
+    "visitStoreAria": "Visita la tienda de Urantix (se abre en una pestaña nueva)",
+    "openUrantix": "urantix.com",
+    "openUrantixAria": "Abrir urantix.com (se abre en una pestaña nueva)"
+  },
+  "login": {
+    "safeTitle": "Entrar es seguro",
+    "safeText": "Usamos el inicio de sesión de Google y Discord para no manejar nunca tus credenciales.",
+    "title": "Inicia sesión en VXCore",
+    "description": "Conecta tu cuenta para gestionar tu servidor desde el panel. Elige cómo quieres entrar:",
+    "google": "Continuar con Google",
+    "discord": "Continuar con Discord",
+    "mobileNote": "Tu contraseña no pasa por VXCore: el acceso lo gestionan Google y Discord con los permisos mínimos.",
+    "termsLine": "Al continuar aceptas los {terms} y la {privacy}.",
+    "terms": "términos",
+    "privacy": "política de privacidad",
+    "privacyLine": "Detallamos qué datos tratamos y durante cuánto tiempo en la {privacy}.",
+    "guarantees": [
+      {
+        "title": "Tu contraseña no pasa por aquí",
+        "text": "El inicio de sesión ocurre en Google o Discord. Nosotros solo recibimos la confirmación de que eres tú."
+      },
+      {
+        "title": "Permisos mínimos",
+        "text": "Pedimos tu nombre, tu email y tu foto de perfil. Nada más: ni contactos, ni servidores, ni permiso para publicar."
+      },
+      {
+        "title": "Sesión cifrada",
+        "text": "La cookie de sesión es HttpOnly y Secure: viaja solo por HTTPS y ningún script del navegador puede leerla."
+      },
+      {
+        "title": "Revocable cuando quieras",
+        "text": "Puedes retirarle el acceso a VXCore desde los ajustes de tu cuenta de Google o Discord, sin pasar por nosotros."
+      }
+    ]
+  },
+  "legal": {
+    "updated": "Última actualización: {date}",
+    "updatedAt": "7 de agosto de 2026",
+    "nav": {
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "cookies": "Cookies"
+    },
+    "privacy": {
+      "title": "Política de privacidad",
+      "description": "Qué datos trata VXCore, con qué finalidad, durante cuánto tiempo y cómo ejercer tus derechos.",
+      "intro": "Qué datos personales tratamos, para qué, con quién los compartimos y qué puedes hacer al respecto.",
+      "sections": [
+        {
+          "heading": "Responsable del tratamiento",
+          "blocks": [
+            {
+              "type": "note",
+              "text": "**Pendiente de completar:** denominación social, NIF, domicilio y email de contacto del responsable. El RGPD exige identificarlo, y no son datos que podamos rellenar por ti."
+            }
+          ]
+        },
+        {
+          "heading": "Qué datos tratamos",
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "**Cuenta:** email, nombre y foto de perfil, que nos facilita Google o Discord cuando inicias sesión, más el proveedor utilizado. No recibimos tu contraseña en ningún caso.",
+                "**Facturación:** identificadores de cliente, de pedido y de pago generados por Stripe, junto con el importe y el estado. **No almacenamos datos de tarjeta.**",
+                "**Licencia:** la clave asociada a tu cuenta y su estado.",
+                "**Soporte:** los mensajes que nos envías por el formulario de contacto, el chat o los tickets."
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Para qué y con qué base legal",
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Prestarte el servicio, activar tu licencia y gestionar la suscripción — *ejecución del contrato*.",
+                "Atender tus consultas de soporte — *ejecución del contrato* o *interés legítimo* si aún no eres cliente.",
+                "Cumplir obligaciones fiscales y contables — *obligación legal*.",
+                "Mantener la seguridad del servicio y prevenir el uso fraudulento de licencias — *interés legítimo*."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "No hacemos perfilado ni decisiones automatizadas con efectos jurídicos, y no vendemos tus datos a nadie."
+            }
+          ]
+        },
+        {
+          "heading": "Quién más los trata",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Solo los proveedores necesarios para que el servicio funcione, cada uno con su propio contrato de encargado de tratamiento:"
+            },
+            {
+              "type": "list",
+              "items": [
+                "**Vercel** — alojamiento de la web y del panel.",
+                "**Turso** — base de datos donde viven las cuentas, pedidos, licencias y mensajes.",
+                "**Stripe** — pasarela de pago y gestión de la suscripción.",
+                "**Google** y **Discord** — únicamente para el inicio de sesión."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Algunos de estos proveedores pueden tratar datos fuera del Espacio Económico Europeo, amparándose en las cláusulas contractuales tipo de la Comisión Europea o en decisiones de adecuación."
+            }
+          ]
+        },
+        {
+          "heading": "Cuánto tiempo los guardamos",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Los datos de tu cuenta y tu licencia, mientras la cuenta siga activa. La información de facturación, durante los plazos que exige la normativa fiscal. Los mensajes de soporte, mientras sean útiles para atenderte y acreditar lo hablado."
+            }
+          ]
+        },
+        {
+          "heading": "Tus derechos",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Puedes solicitar acceso, rectificación, supresión, limitación, portabilidad y oposición escribiéndonos desde la sección de contacto. Responderemos en el plazo de un mes."
+            },
+            {
+              "type": "p",
+              "text": "Si consideras que no hemos atendido bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos ([aepd.es](https://www.aepd.es))."
+            }
+          ]
+        },
+        {
+          "heading": "Menores",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "El servicio no está dirigido a menores de 14 años. Si detectamos una cuenta de un menor sin autorización de sus tutores, la eliminaremos."
+            }
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Términos y condiciones",
+      "description": "Condiciones de uso de VXCore: suscripción, licencia de uso, cancelación y reembolsos.",
+      "intro": "Estas condiciones regulan el uso de VXCore, el panel de control para servidores FiveM (FXServer), y de la web vxcore.reylab.cloud.",
+      "sections": [
+        {
+          "heading": "1. Quiénes somos",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "VXCore es un producto de Urantix. Para cualquier cuestión relacionada con estas condiciones puedes escribirnos desde la sección de contacto de la web o desde el chat de tu panel."
+            },
+            {
+              "type": "note",
+              "text": "**Pendiente de completar:** aquí deben figurar la denominación social, el NIF y el domicilio del titular, además de un email de contacto. Son datos obligatorios según la LSSI-CE y no los hemos inventado."
+            }
+          ]
+        },
+        {
+          "heading": "2. Qué se contrata",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "El instalador de VXCore se descarga sin coste. Lo que se contrata es una **licencia de uso** que activa el producto: sin una clave de licencia activa, la aplicación no funciona."
+            },
+            {
+              "type": "p",
+              "text": "La licencia es personal e intransferible y se vincula a la cuenta con la que se contrató. No autoriza a revender, redistribuir ni sublicenciar el producto, ni a compartir la clave con terceros."
+            }
+          ]
+        },
+        {
+          "heading": "3. Precio, pago y renovación",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "El plan se factura como **suscripción mensual** al precio indicado en la página de precios en el momento de la contratación, impuestos incluidos cuando así se señale. El cobro se gestiona íntegramente a través de **Stripe**; nosotros no almacenamos ni vemos los datos de tu tarjeta."
+            },
+            {
+              "type": "p",
+              "text": "La suscripción se renueva automáticamente cada periodo hasta que la canceles. Si un cobro de renovación falla, Stripe reintenta el cargo; si finalmente no se completa, la suscripción se da por terminada y la licencia deja de estar activa."
+            }
+          ]
+        },
+        {
+          "heading": "4. Cancelación",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Puedes cancelar cuando quieras. La cancelación surte efecto **al final del periodo ya pagado**: conservas el acceso hasta esa fecha y no se emiten cobros posteriores. Al terminar el periodo, la licencia pasa a estado revocado y la aplicación deja de funcionar."
+            }
+          ]
+        },
+        {
+          "heading": "5. Derecho de desistimiento",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Si contratas como consumidor en la Unión Europea dispones de 14 días naturales para desistir. Al tratarse de contenido digital de ejecución inmediata, al contratar aceptas que la prestación comience de inmediato y reconoces que **pierdes el derecho de desistimiento** una vez el servicio ha sido plenamente ejecutado, conforme al artículo 103.m) del texto refundido de la Ley General para la Defensa de los Consumidores y Usuarios."
+            }
+          ]
+        },
+        {
+          "heading": "6. Uso aceptable",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "No está permitido utilizar VXCore para:"
+            },
+            {
+              "type": "list",
+              "items": [
+                "eludir, desactivar o manipular el sistema de licencias, ni distribuir herramientas destinadas a ello;",
+                "realizar ingeniería inversa sobre el producto salvo en la medida en que la ley lo permita expresamente;",
+                "acceder a servidores, bases de datos o sistemas de terceros sin autorización de su titular;",
+                "cualquier actividad ilícita o que vulnere derechos de terceros."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "El incumplimiento de este apartado puede conllevar la revocación de la licencia sin derecho a reembolso."
+            }
+          ]
+        },
+        {
+          "heading": "7. Tu servidor es tuyo",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "VXCore es una herramienta de administración: se ejecuta en tu equipo y actúa sobre tu servidor con las órdenes que tú le das. Eres responsable de la configuración de tu servidor, de los datos que contiene y de las copias de seguridad. Te recomendamos mantener copias propias antes de aplicar cambios relevantes."
+            },
+            {
+              "type": "p",
+              "text": "VXCore no está afiliado a Cfx.re, a FiveM ni a Rockstar Games. Las marcas citadas pertenecen a sus respectivos titulares."
+            }
+          ]
+        },
+        {
+          "heading": "8. Disponibilidad y garantías",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Trabajamos para que el servicio esté disponible de forma continuada, pero no garantizamos un funcionamiento ininterrumpido ni libre de errores. Podemos realizar tareas de mantenimiento y publicar actualizaciones que modifiquen o retiren funciones."
+            },
+            {
+              "type": "p",
+              "text": "Nada en estas condiciones excluye la responsabilidad que legalmente no pueda excluirse, en particular frente a consumidores."
+            }
+          ]
+        },
+        {
+          "heading": "9. Cambios en estas condiciones",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Podemos actualizar estas condiciones. Si el cambio es sustancial te lo comunicaremos con antelación razonable por email o desde el propio panel. La fecha de la última revisión aparece al principio de esta página."
+            }
+          ]
+        },
+        {
+          "heading": "10. Ley aplicable",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Estas condiciones se rigen por la legislación española. Si contratas como consumidor, conservas los derechos que te reconoce la normativa de tu país de residencia y puedes acudir a la plataforma europea de resolución de litigios en línea."
+            }
+          ]
+        }
+      ]
+    },
+    "cookies": {
+      "title": "Política de cookies",
+      "description": "VXCore solo usa cookies estrictamente necesarias para iniciar sesión. Sin analítica ni publicidad.",
+      "intro": "Resumen corto: VXCore solo usa las cookies imprescindibles para que puedas iniciar sesión. No hay analítica, ni publicidad, ni rastreo de terceros.",
+      "sections": [
+        {
+          "heading": "Qué es una cookie",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Un archivo pequeño que un sitio guarda en tu navegador para recordar algo entre una página y la siguiente. Algunas son imprescindibles para que el sitio funcione; otras sirven para medir audiencias o mostrar publicidad. **Aquí solo usamos las del primer tipo.**"
+            }
+          ]
+        },
+        {
+          "heading": "Cookies que utilizamos",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Todas son **estrictamente necesarias** y las instala Auth.js, la biblioteca que gestiona el inicio de sesión. Se marcan como `HttpOnly` y `Secure`, de modo que ningún script puede leerlas y solo viajan por HTTPS."
+            },
+            {
+              "type": "table",
+              "head": ["Cookie", "Para qué sirve", "Duración"],
+              "rows": [
+                {
+                  "name": "__Host-authjs.csrf-token",
+                  "purpose": "Protege el formulario de inicio de sesión frente a peticiones falsificadas desde otros sitios (CSRF).",
+                  "duration": "De sesión"
+                },
+                {
+                  "name": "__Secure-authjs.callback-url",
+                  "purpose": "Recuerda a qué página volver cuando terminas de iniciar sesión con Google o Discord.",
+                  "duration": "De sesión"
+                },
+                {
+                  "name": "__Secure-authjs.session-token",
+                  "purpose": "Mantiene tu sesión iniciada para que el panel sepa quién eres. Solo se crea al iniciar sesión.",
+                  "duration": "30 días"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Por qué no te pedimos consentimiento",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "La normativa de cookies exige pedir consentimiento para las que *no* son imprescindibles: analítica, publicidad, redes sociales incrustadas. Como no usamos ninguna de esas, no hay nada que consentir, y por eso no verás un banner. Si algún día añadimos analítica, aparecerá el aviso correspondiente y podrás rechazarla."
+            }
+          ]
+        },
+        {
+          "heading": "Otros datos guardados en tu navegador",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Tu preferencia de tema (claro u oscuro) se guarda en el **almacenamiento local** de tu navegador, no en una cookie. No sale de tu equipo y no nos llega."
+            }
+          ]
+        },
+        {
+          "heading": "Cómo eliminarlas",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Puedes borrar o bloquear las cookies desde los ajustes de tu navegador. Ten en cuenta que, al ser imprescindibles para la sesión, bloquearlas impedirá iniciar sesión y acceder a tu panel."
+            }
+          ]
+        },
+        {
+          "heading": "Servicios externos",
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Cuando realizas un pago, el proceso ocurre en el dominio de **Stripe**, que aplica su propia política de cookies. Lo mismo sucede al iniciar sesión en las pantallas de **Google** o **Discord**. Nosotros no instalamos cookies en tu navegador en nombre de esos servicios."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "dashboard": {
+    "backToWeb": "Volver a la web",
+    "dbNotConfigured": "Base de datos no configurada.",
+    "dbNotConfiguredText": "El panel se muestra con datos vacíos y las compras no se pueden registrar. En producción (Vercel) configura `TURSO_DATABASE_URL` y `TURSO_AUTH_TOKEN`.",
+    "title": "Tu panel",
+    "subtitle": "Gestiona tu suscripción, tu licencia y descarga la última versión del instalador.",
+    "subscription": "Suscripción",
+    "activeAccessPaid": "Acceso activo — pago confirmado el {date}",
+    "activeAccessGranted": "Acceso activo — licencia emitida por el equipo",
+    "paidThanks": "Gracias por confiar en VXCore. Tu licencia y el instalador están listos abajo.",
+    "grantedThanks": "Tu acceso está activo. Si quieres apoyar el proyecto o necesitas otra licencia, escríbenos desde la web.",
+    "unlockText": "Desbloquea la descarga del instalador y tu licencia personal. Pago único, cancelas cuando quieras.",
+    "stripeNote": "Pagas con tarjeta o Google Pay a través de Stripe. Al confirmar, tu licencia se genera automáticamente.",
+    "installer": "Instalador",
+    "latestVersion": "Última versión publicada",
+    "downloadInstaller": "Descargar VXCore v{version}",
+    "downloadDisabled": "Descargar instalador",
+    "downloadLocked": "La descarga se desbloquea al completar tu compra.",
+    "noVersion": "Sin versión publicada",
+    "noVersionText": "El equipo todavía no ha publicado un instalador. Vuelve en unos días.",
+    "license": "Tu licencia",
+    "licenseActivate": "Actívala en el panel de VXCore cuando abras el instalador. Esta clave está vinculada a tu cuenta ({email}).",
+    "licenseGenerating": "Estamos generando tu licencia… si no aparece en unos segundos, recarga la página.",
+    "licenseRevoked": "Tu licencia fue revocada. Si crees que es un error, escríbenos desde la sección de contacto.",
+    "licensePending": "Tu licencia aparecerá aquí automáticamente cuando completes el pago.",
+    "servers": "Tus paneles",
+    "serversHint": "Equipos con el acceso remoto activado. Se abren desde cualquier sitio, pero sólo entra quien tenga permiso en tu Discord.",
+    "unnamed": "Sin nombre",
+    "online": "En línea",
+    "offline": "Equipo apagado — el enlace no responderá",
+    "orders": "Tus pedidos",
+    "noOrders": "Todavía no tienes pedidos.",
+    "status": "Estado",
+    "plan": "Plan",
+    "amount": "Importe",
+    "date": "Fecha",
+    "paid": "Pagado",
+    "pending": "Pendiente",
+    "copied": "Copiada",
+    "copy": "Copiar",
+    "copiedToast": "Licencia copiada al portapapeles",
+    "payStripe": "Pagar con Stripe",
+    "opening": "Abriendo pago…",
+    "logout": "Salir",
+    "userAria": "Usuario",
+    "successToast": "Pago recibido. Tu licencia ya está disponible.",
+    "canceledToast": "Pago cancelado. Puedes intentarlo cuando quieras."
+  },
+  "tickets": {
+    "title": "Tickets de soporte",
+    "openCount": "{open} abiertos · {closed} cerrados",
+    "createHint": "Crea un ticket para escribirnos",
+    "createAgain": "¿Necesitas ayuda de nuevo?",
+    "createText": "Cuéntanos brevemente tu problema o duda. Te respondemos aquí y todo queda guardado en el ticket.",
+    "subjectPlaceholder": "¿Sobre qué necesitas ayuda? (opcional)",
+    "openTicket": "Abrir ticket",
+    "openSuccessToast": "Ticket abierto. Escríbenos lo que necesites.",
+    "openNewTicket": "Abrir nuevo ticket",
+    "closedNew": "Ticket cerrado. Si necesitas algo más, abre un nuevo ticket.",
+    "ratingCommentPlaceholder": "¿Algo que quieras comentar? (opcional)",
+    "open": "Abierto",
+    "closed": "Cerrado",
+    "loading": "Cargando…",
+    "showConversation": "Ver conversación ({count} mensajes)",
+    "hideConversation": "Ocultar conversación",
+    "ticketOpen": "Ticket #{id} · abierto",
+    "closeTicket": "Cerrar ticket",
+    "staff": "Staff",
+    "you": "Tú",
+    "send": "Enviar",
+    "messagePlaceholder": "Escribe tu mensaje… (Enter para enviar)",
+    "noMessages": "Esta conversación no tiene mensajes.",
+    "startConversation": "Este ticket está listo para empezar. Escríbenos y te responderemos aquí.",
+    "rateTitle": "¿Cómo valoras la atención recibida?",
+    "rateSend": "Enviar valoración",
+    "rateLater": "Ahora no",
+    "ratedThanks": "Gracias por tu valoración",
+    "ratedToast": "¡Gracias por tu valoración!",
+    "closedThanks": "Ticket cerrado. ¡Gracias!",
+    "ratingAria": "Valoración: {value} de 5",
+    "starAria": "{n} estrella",
+    "starAriaPlural": "{n} estrellas",
+    "ticketLabel": "Ticket #{id}",
+    "errors": {
+      "open": "No se pudo abrir el ticket.",
+      "close": "No se pudo cerrar el ticket.",
+      "send": "No se pudo enviar el mensaje.",
+      "rate": "No se pudo enviar la valoración.",
+      "network": "Error de red. Inténtalo de nuevo."
+    }
+  },
+  "docs": {
+    "nav": {
+      "label": "Documentación",
+      "gettingStarted": "Empezar",
+      "requirements": "Requisitos",
+      "installation": "Instalación",
+      "discordBot": "Bot de Discord"
+    },
+    "index": {
+      "title": "Centro de documentación",
+      "description": "Todo lo que necesitas para instalar VXCore, conectar tu servidor y configurar el bot de Discord, explicado paso a paso.",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "VXCore es el sistema operativo de tu servidor FXServer: un **panel** que gestiona tus servidores, recursos, logs y automatizaciones, un **agente** que se ejecuta en la misma máquina que tu servidor y una app de **escritorio** para Windows."
+        },
+        {
+          "type": "h2",
+          "text": "Empieza por aquí"
+        },
+        {
+          "type": "p",
+          "text": "En menos de 10 minutos tendrás VXCore funcionando. Elige el camino según lo que busques:"
+        },
+        {
+          "type": "cards",
+          "items": [
+            {
+              "title": "Guía de instalación",
+              "description": "Descarga el instalador, actívalo con tu licencia y conecta tu FXServer.",
+              "href": "/docs/instalacion",
+              "cta": "Ir a la guía"
+            },
+            {
+              "title": "Requisitos del sistema",
+              "description": "Qué necesitas antes de empezar: sistema operativo, Node y servidor.",
+              "href": "/docs/requisitos",
+              "cta": "Ver requisitos"
+            },
+            {
+              "title": "Configurar el bot de Discord",
+              "description": "Conecta tu comunidad: login del staff, roles y estado del servidor.",
+              "href": "/docs/bot-discord",
+              "cta": "Ver guía"
+            }
+          ]
+        },
+        {
+          "type": "h2",
+          "text": "¿Y el despliegue?"
+        },
+        {
+          "type": "p",
+          "text": "**No tienes que hacer nada.** La app de escritorio levanta el panel y el agente en tu equipo, instala los componentes que falten (el runtime de Visual C++ y tu FXServer si no lo tienes) y se actualiza sola. Nada de servidores, ni Vercel, ni tocar código."
+        },
+        {
+          "type": "h2",
+          "text": "Arquitectura en una tabla"
+        },
+        {
+          "type": "table",
+          "head": ["Pieza", "Tecnología", "Dónde corre"],
+          "rows": [
+            ["Panel", "Next.js (App Router)", "En el navegador / web"],
+            ["Agente", "Node.js + Express + Socket.IO", "En la misma máquina que FXServer"],
+            ["Escritorio", "Electron", "Windows (instalador autocontenido)"]
+          ]
+        },
+        {
+          "type": "callout",
+          "variant": "warning",
+          "text": "El panel **nunca toca disco ni procesos**: todas sus llamadas van por HTTP a un agente VXCore, que es quien controla FXServer, MySQL, Discord y automatizaciones. El agente escucha solo en `127.0.0.1` (loopback) a propósito: así Windows Firewall no pide permisos de red y no hay puertos expuestos."
+        }
+      ]
+    },
+    "requirements": {
+      "title": "Requisitos del sistema",
+      "description": "Qué necesitas antes de instalar VXCore. Menos de lo que imaginas.",
+      "blocks": [
+        {
+          "type": "h2",
+          "text": "Lo mínimo para empezar"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Windows 10 u 11** de 64 bits.",
+            "**~500 MB** de espacio libre en disco.",
+            "Conexión a internet (primera descarga, activación de la licencia y actualizaciones).",
+            "Una cuenta en la web de VXCore, para obtener tu **licencia** y el instalador."
+          ]
+        },
+        {
+          "type": "h2",
+          "text": "Lo que la app instala por ti"
+        },
+        {
+          "type": "p",
+          "text": "En el primer arranque la app revisa tu equipo y **descarga e instala lo que falte** sin que tengas que hacer nada:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Runtime de Visual C++ 2015-2022 (x64)**: lo necesita FXServer para arrancar. La primera vez la app te pedirá permiso de administrador (UAC).",
+            "**Artifacts de FXServer**: si aún no tienes servidor, la app descarga la versión recomendada por FiveM y la deja lista en tu carpeta de usuario."
+          ]
+        },
+        {
+          "type": "h2",
+          "text": "Lo que NO necesitas"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Node.js ni npm**: la app lleva su propio runtime integrado.",
+            "**MySQL** para empezar: solo lo necesitas si tu servidor usa base de datos.",
+            "**Git** ni saber tocar código."
+          ]
+        },
+        {
+          "type": "callout",
+          "variant": "info",
+          "text": "¿Ya tienes un servidor FXServer? Puedes **registrarlo** desde el panel y VXCore lo controla igualmente. ¿Usas Linux o un VPS? El agente también corre en Linux, pero la app de escritorio es solo para Windows."
+        }
+      ]
+    },
+    "installation": {
+      "title": "Guía de instalación",
+      "description": "Descarga, activa y conecta VXCore paso a paso.",
+      "blocks": [
+        {
+          "type": "h2",
+          "text": "1. Crea tu cuenta"
+        },
+        {
+          "type": "p",
+          "text": "Entra en la web e **inicia sesión con Google o Discord**. Con la cuenta creada accedes a tu panel, donde está tu licencia y el instalador."
+        },
+        {
+          "type": "h2",
+          "text": "2. Descarga el instalador"
+        },
+        {
+          "type": "p",
+          "text": "Desde tu **panel** (botón *Descargar* en la tarjeta Instalador) se descarga el ejecutable `VXCore-Setup`. No necesitas tener Node ni ningún otro programa instalado."
+        },
+        {
+          "type": "h2",
+          "text": "3. Ejecuta e introduce tu licencia"
+        },
+        {
+          "type": "p",
+          "text": "Ejecuta el instalador y, cuando lo pida, pega la **clave de licencia** que aparece en tu panel. La clave está vinculada a tu cuenta: no la compartas."
+        },
+        {
+          "type": "h2",
+          "text": "4. Primer arranque: la app lo prepara todo"
+        },
+        {
+          "type": "p",
+          "text": "Al abrir la app por primera vez, revisa tu equipo e **instala lo que falte automáticamente** (el runtime de Visual C++ y, si no tienes uno, tu FXServer). Solo tendrás que aceptar un aviso de Windows (UAC) la primera vez."
+        },
+        {
+          "type": "h2",
+          "text": "5. Conecta tu servidor"
+        },
+        {
+          "type": "p",
+          "text": "Crea un servidor nuevo desde el panel o **registra** el que ya tengas indicando su carpeta. En menos de 5 minutos tu servidor aparece en la consola, los logs y el resto de módulos."
+        },
+        {
+          "type": "h2",
+          "text": "Despliegue y actualizaciones"
+        },
+        {
+          "type": "p",
+          "text": "**No tienes que desplegar nada.** La app levanta el panel y el agente en tu equipo, los apaga al cerrar la ventana y las actualizaciones llegan por **auto-update**: el panel avisa cuando hay una versión nueva y se instala sin que tengas que volver a descargar nada."
+        },
+        {
+          "type": "callout",
+          "variant": "info",
+          "text": "¿Quieres que tu comunidad entre con Discord? Sigue la guía de **Configurar el bot de Discord**."
+        }
+      ]
+    },
+    "discord": {
+      "title": "Configurar el bot de Discord",
+      "description": "Conecta VXCore a tu servidor de Discord: login del staff, roles, estado y whitelist.",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Con el bot conectado, tu comunidad entra al panel con **su cuenta de Discord**, el staff se reconoce por **roles** y puedes publicar el **estado del servidor** en un canal. Todo se configura desde *Ajustes → Discord & Staff*."
+        },
+        {
+          "type": "h2",
+          "text": "1. Crea una aplicación en el portal de Discord"
+        },
+        {
+          "type": "p",
+          "text": "Entra en **https://discord.com/developers/applications**, pulsa *New Application*, ponle un nombre (por ejemplo, el de tu servidor) y créala."
+        },
+        {
+          "type": "h2",
+          "text": "2. Copia las credenciales"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Client ID**: en la pestaña *OAuth2*.",
+            "**Client Secret**: en *OAuth2 → General*.",
+            "**Bot Token**: en *Bot → Reset Token*. Es un secreto: no lo compartas.",
+            "**Guild ID**: en Discord, activa *Modo desarrollador* (Ajustes → Avanzado), clic derecho en tu servidor → *Copiar ID de servidor*."
+          ]
+        },
+        {
+          "type": "h2",
+          "text": "3. Invita al bot a tu servidor"
+        },
+        {
+          "type": "p",
+          "text": "En *OAuth2 → URL Generator*, marca el scope **bot** con los permisos que quieras, copia la URL generada y ábrela en tu navegador para añadir el bot."
+        },
+        {
+          "type": "h2",
+          "text": "4. Configúralo en la app"
+        },
+        {
+          "type": "p",
+          "text": "Abre *Ajustes → Discord & Staff* en el panel y pega las credenciales. Guarda y el bot se conectará a tu servidor."
+        },
+        {
+          "type": "h2",
+          "text": "Qué puedes hacer después"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Login con Discord**: tu comunidad entra con su cuenta; tú decides quién es *owner*, *admin* o *moderador* asignando roles.",
+            "**Estado del servidor**: publica en un canal si tu FiveM está online, cuántos jugadores hay y más.",
+            "**Whitelist**: restringe el acceso a tu servidor a los miembros de tu Discord."
+          ]
+        },
+        {
+          "type": "callout",
+          "variant": "warning",
+          "text": "El **Client Secret** y el **Bot Token** son secretos: nunca los compartas ni los subas a GitHub."
+        }
+      ]
+    }
+  }
+}

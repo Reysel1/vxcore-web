@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -9,6 +7,7 @@ import {
   PackageOpen,
   ReceiptText,
 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { Logo } from "@/components/site/logo";
@@ -31,6 +30,7 @@ import {
   SignOutButton,
 } from "@/components/dashboard/actions";
 import { UserTickets } from "@/components/dashboard/tickets";
+import { Link, redirectToLogin } from "@/i18n/navigation";
 import {
   ensureUser,
   getActiveLicense,
@@ -42,6 +42,16 @@ import {
   listOrdersForEmail,
   listTunnelsForLicense,
 } from "@/lib/db";
+
+// El dashboard depende de la sesión (cookies), así que siempre se renderiza
+// por petición, nunca de forma estática.
+export const dynamic = "force-dynamic";
+
+const DATE_LOCALES: Record<string, string> = {
+  es: "es-ES",
+  en: "en-US",
+  fr: "fr-FR",
+};
 
 function initials(name?: string | null) {
   if (!name) return "VX";
@@ -59,9 +69,9 @@ function formatAmount(cents: number | null | undefined, currency?: string) {
   return `${symbol}${value.toFixed(2)}`;
 }
 
-function formatDate(sqlDate?: string | null) {
+function formatDate(sqlDate?: string | null, locale = "es-ES") {
   if (!sqlDate) return "—";
-  return new Date(sqlDate.replace(" ", "T") + "Z").toLocaleDateString("es-ES", {
+  return new Date(sqlDate.replace(" ", "T") + "Z").toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -83,17 +93,21 @@ function isRecent(sqlDate?: string | null): boolean {
 
 export default async function DashboardPage() {
   const session = await auth();
+  const locale = await getLocale();
+  const t = await getTranslations("dashboard");
+  const dateLocale = DATE_LOCALES[locale] ?? "es-ES";
 
-  if (!session?.user) {
-    redirect("/?login=1");
+  const user = session?.user ?? null;
+  if (!user) {
+    redirectToLogin(locale);
   }
 
-  const email = session.user.email!;
+  const email = user.email!;
   ensureUser({
     email,
-    name: session.user.name,
-    image: session.user.image,
-    provider: session.user.provider,
+    name: user.name,
+    image: user.image,
+    provider: user.provider,
   });
 
   const dbError = getDbError();
@@ -119,21 +133,21 @@ export default async function DashboardPage() {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
-            Volver a la web
+            {t("backToWeb")}
           </Link>
           <Logo />
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2.5 sm:flex">
               <Avatar className="size-8">
                 <AvatarImage
-                  src={session.user.image ?? undefined}
-                  alt={session.user.name ?? "Usuario"}
+                  src={user.image ?? undefined}
+                  alt={user.name ?? t("userAria")}
                 />
-                <AvatarFallback>{initials(session.user.name)}</AvatarFallback>
+                <AvatarFallback>{initials(user.name)}</AvatarFallback>
               </Avatar>
               <div className="leading-tight">
                 <div className="max-w-40 truncate text-sm font-medium">
-                  {session.user.name ?? email}
+                  {user.name ?? email}
                 </div>
                 <div className="max-w-40 truncate text-xs text-muted-foreground">
                   {email}
@@ -151,21 +165,15 @@ export default async function DashboardPage() {
             role="alert"
             className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3.5 text-sm text-amber-700 dark:text-amber-300"
           >
-            <span className="font-semibold">Base de datos no configurada.</span>{" "}
-            El panel se muestra con datos vacíos y las compras no se pueden
-            registrar. En producción (Vercel) configura{" "}
-            <code className="font-mono text-xs">TURSO_DATABASE_URL</code> y{" "}
-            <code className="font-mono text-xs">TURSO_AUTH_TOKEN</code>.
+            <span className="font-semibold">{t("dbNotConfigured")}</span>{" "}
+            {t("dbNotConfiguredText")}
           </div>
         )}
         <div className="mb-8">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Tu panel
+            {t("title")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Gestiona tu suscripción, tu licencia y descarga la última versión
-            del instalador.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -178,7 +186,7 @@ export default async function DashboardPage() {
                 ) : (
                   <PackageOpen className="size-4 text-muted-foreground" />
                 )}
-                Suscripción
+                {t("subscription")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -189,23 +197,23 @@ export default async function DashboardPage() {
                     <p className="text-sm text-muted-foreground">
                       {paid ? (
                         <>
-                          Acceso activo — pago confirmado el{" "}
-                          {formatDate(
-                            orders.find((o) => o.status === "paid")?.paid_at as
-                              | string
-                              | null
-                              | undefined
-                          )}
+                          {t("activeAccessPaid", {
+                            date: formatDate(
+                              orders.find((o) => o.status === "paid")?.paid_at as
+                                | string
+                                | null
+                                | undefined,
+                              dateLocale
+                            ),
+                          })}
                         </>
                       ) : (
-                        "Acceso activo — licencia emitida por el equipo"
+                        t("activeAccessGranted")
                       )}
                     </p>
                   </div>
                   <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-600 dark:text-emerald-400">
-                    {paid
-                      ? "Gracias por confiar en VXCore. Tu licencia y el instalador están listos abajo."
-                      : "Tu acceso está activo. Si quieres apoyar el proyecto o necesitas otra licencia, escríbenos desde la web."}
+                    {paid ? t("paidThanks") : t("grantedThanks")}
                   </div>
                 </>
               ) : (
@@ -213,14 +221,12 @@ export default async function DashboardPage() {
                   <div>
                     <div className="text-lg font-semibold">{planLabel}</div>
                     <p className="text-sm text-muted-foreground">
-                      Desbloquea la descarga del instalador y tu licencia
-                      personal. Pago único, cancelas cuando quieras.
+                      {t("unlockText")}
                     </p>
                   </div>
                   <CheckoutButton />
                   <p className="text-xs text-muted-foreground">
-                    Pagas con tarjeta o Google Pay a través de Stripe. Al
-                    confirmar, tu licencia se genera automáticamente.
+                    {t("stripeNote")}
                   </p>
                 </>
               )}
@@ -232,7 +238,7 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Download className="size-4 text-muted-foreground" />
-                Instalador
+                {t("installer")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -243,36 +249,38 @@ export default async function DashboardPage() {
                       VXCore v{String(installer.version)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Última versión publicada
+                      {t("latestVersion")}
                       {Number(installer.size_bytes) > 0 &&
                         ` · ${(Number(installer.size_bytes) / 1024 / 1024).toFixed(1)} MB`}
                     </p>
                   </div>
                   {access ? (
                     <Button asChild className="h-10 w-full gap-2">
+                      {/* Descarga de fichero: un <a> simple, no una navegación de
+                          página (next/link precargaría la ruta de API). */}
+                      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                       <a href="/api/download">
                         <Download className="size-4" />
-                        Descargar VXCore v{String(installer.version)}
+                        {t("downloadInstaller", { version: String(installer.version) })}
                       </a>
                     </Button>
                   ) : (
                     <div className="flex flex-col gap-2.5">
                       <Button className="h-10 w-full gap-2" disabled>
                         <Download className="size-4" />
-                        Descargar instalador
+                        {t("downloadDisabled")}
                       </Button>
                       <p className="text-xs text-muted-foreground">
-                        La descarga se desbloquea al completar tu compra.
+                        {t("downloadLocked")}
                       </p>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="flex flex-col items-start gap-2">
-                  <div className="text-lg font-semibold">Sin versión publicada</div>
+                  <div className="text-lg font-semibold">{t("noVersion")}</div>
                   <p className="text-sm text-muted-foreground">
-                    El equipo todavía no ha publicado un instalador. Vuelve en
-                    unos días.
+                    {t("noVersionText")}
                   </p>
                 </div>
               )}
@@ -284,7 +292,7 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <KeyRound className="size-4 text-muted-foreground" />
-                Tu licencia
+                {t("license")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -297,25 +305,20 @@ export default async function DashboardPage() {
                     <CopyLicenseKey licenseKey={String(license.license_key)} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Actívala en el panel de VXCore cuando abras el instalador.
-                    Esta clave está vinculada a tu cuenta (
-                    <span className="text-foreground">{email}</span>).
+                    {t("licenseActivate", { email })}
                   </p>
                 </>
               ) : paid ? (
                 <p className="text-sm text-muted-foreground">
-                  Estamos generando tu licencia… si no aparece en unos segundos,
-                  recarga la página.
+                  {t("licenseGenerating")}
                 </p>
               ) : getUserLicense(email) ? (
                 <p className="text-sm text-muted-foreground">
-                  Tu licencia fue revocada. Si crees que es un error, escríbenos
-                  desde la sección de contacto.
+                  {t("licenseRevoked")}
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Tu licencia aparecerá aquí automáticamente cuando completes el
-                  pago.
+                  {t("licensePending")}
                 </p>
               )}
             </CardContent>
@@ -328,11 +331,10 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Globe className="size-4 text-muted-foreground" />
-                  Tus paneles
+                  {t("servers")}
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  Equipos con el acceso remoto activado. Se abren desde cualquier sitio, pero
-                  sólo entra quien tenga permiso en tu Discord.
+                  {t("serversHint")}
                 </p>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
@@ -357,11 +359,11 @@ export default async function DashboardPage() {
                             }
                           />
                           <span className="truncate text-sm font-medium">
-                            {String(server.installation_name || "Sin nombre")}
+                            {String(server.installation_name || t("unnamed"))}
                           </span>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                          {online ? "En línea" : "Equipo apagado — el enlace no responderá"}
+                          {online ? t("online") : t("offline")}
                         </p>
                       </div>
                       <a
@@ -384,22 +386,22 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <ReceiptText className="size-4 text-muted-foreground" />
-                Tus pedidos
+                {t("orders")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {orders.length === 0 ? (
                 <p className="py-2 text-sm text-muted-foreground">
-                  Todavía no tienes pedidos.
+                  {t("noOrders")}
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Importe</TableHead>
-                      <TableHead>Fecha</TableHead>
+                      <TableHead>{t("status")}</TableHead>
+                      <TableHead>{t("plan")}</TableHead>
+                      <TableHead>{t("amount")}</TableHead>
+                      <TableHead>{t("date")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -413,7 +415,7 @@ export default async function DashboardPage() {
                                 : "text-muted-foreground"
                             }
                           >
-                            {order.status === "paid" ? "Pagado" : "Pendiente"}
+                            {order.status === "paid" ? t("paid") : t("pending")}
                           </span>
                         </TableCell>
                         <TableCell>{String(order.plan_name)}</TableCell>
@@ -424,7 +426,7 @@ export default async function DashboardPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {formatDate(order.created_at as string)}
+                          {formatDate(order.created_at as string, dateLocale)}
                         </TableCell>
                       </TableRow>
                     ))}

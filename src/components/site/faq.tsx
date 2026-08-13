@@ -1,4 +1,5 @@
 import { BookOpen, MessageCircle } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import {
   Accordion,
@@ -9,36 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/site/section-heading";
-import { URANTIX_STORE_URL } from "@/lib/site";
+import { Link } from "@/i18n/navigation";
 
-const FAQS = [
-  {
-    q: "¿Funciona con mi servidor FXServer?",
-    a: "Sí. VXCore se conecta a cualquier servidor FXServer moderno (txAdmin, standalone o tu propia configuración) a través de su consola RCON y WebSocket. En menos de 5 minutos tu servidor aparece en el panel.",
-  },
-  {
-    q: "¿Necesito conocimientos técnicos?",
-    a: "No. Si sabes usar un navegador, sabes usar VXCore. La consola, los logs y el editor están pensados para que cualquiera del equipo pueda administrar sin miedo a romper nada.",
-  },
-  {
-    q: "¿Puede el agente de IA romper mi servidor?",
-    a: "No. El agente solo carga los cambios en el editor: nada se escribe en producción hasta que tú pulsas Guardar, y siempre queda una copia de la versión anterior para revertir.",
-  },
-  {
-    q: "¿Qué pasa con mis recursos de la tienda Urantix?",
-    a: "El marketplace de VXCore está integrado con la tienda Urantix: compra, descarga e instala recursos directamente en tu servidor desde el panel, sin FTP ni despliegues manuales.",
-  },
-  {
-    q: "¿Puedo cambiar o cancelar el plan cuando quiera?",
-    a: "Por supuesto. Sube, baja o cancela en un clic desde tu panel de facturación. Los planes anuales se prorratean si cambias antes de tiempo.",
-  },
-  {
-    q: "¿Qué soporte incluye?",
-    a: "El plan Pro incluye soporte prioritario con una primera respuesta media de menos de 2 horas. Todos los planes acceden a la documentación, la comunidad y el Discord oficial de Urantix.",
-  },
-];
+export async function Faq() {
+  const t = await getTranslations("faq");
+  const faqs = t.raw("items") as { q: string; a: string }[];
 
-export function Faq() {
   return (
     <section
       id="faq"
@@ -53,11 +30,11 @@ export function Faq() {
               eyebrow="FAQ"
               title={
                 <>
-                  Preguntas,{" "}
-                  <span className="text-gradient">respondidas</span>
+                  {t("title1")}{" "}
+                  <span className="text-gradient">{t("titleAccent")}</span>
                 </>
               }
-              description="Todo lo que necesitas saber antes de conectar tu servidor. ¿No encuentras tu respuesta? Habla directamente con el equipo."
+              description={t("description")}
             />
 
             <Card className="mt-10 overflow-hidden">
@@ -66,26 +43,21 @@ export function Faq() {
                   <MessageCircle className="size-5" />
                 </span>
                 <h3 className="mt-4 font-heading text-lg font-semibold">
-                  ¿Tienes más dudas?
+                  {t("moreTitle")}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  Nuestro equipo responde en menos de 2 horas en el Discord
-                  oficial de Urantix. También tienes la documentación completa.
+                  {t("moreText")}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Button className="gap-2">
                     <MessageCircle className="size-4" />
-                    Unirme al Discord
+                    {t("joinDiscord")}
                   </Button>
                   <Button asChild variant="outline" className="gap-2">
-                    <a
-                      href={URANTIX_STORE_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <Link href="/docs">
                       <BookOpen className="size-4" />
-                      Documentación
-                    </a>
+                      {t("documentation")}
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -94,7 +66,7 @@ export function Faq() {
 
           {/* Columna derecha: acordeón */}
           <Accordion type="single" collapsible className="gap-1">
-            {FAQS.map((faq, i) => (
+            {faqs.map((faq, i) => (
               <AccordionItem
                 key={faq.q}
                 value={`item-${i}`}

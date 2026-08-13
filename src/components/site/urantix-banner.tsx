@@ -1,11 +1,14 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/site/reveal";
 import { URANTIX_STORE_URL } from "@/lib/site";
 
-export function UrantixBanner() {
+export async function UrantixBanner() {
+  const t = await getTranslations("banner");
+
   return (
     <section
       id="urantix"
@@ -27,12 +30,12 @@ export function UrantixBanner() {
             href={URANTIX_STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Urantix × VXCore asociación oficial — visita la tienda de Urantix (se abre en una pestaña nueva)"
+            aria-label={t("aria")}
             className="group relative block overflow-hidden rounded-2xl ring-1 ring-white/10 shadow-2xl shadow-black/50 transition-all duration-300 hover:ring-white/25"
           >
             <Image
               src="/brand/urantix-x-vxcore.png"
-              alt="Banner de la asociación oficial Urantix × VXCore"
+              alt={t("alt")}
               width={1983}
               height={793}
               className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
@@ -48,13 +51,11 @@ export function UrantixBanner() {
           <div className="mt-10 flex flex-col items-center gap-6 text-center">
             <div className="mx-auto max-w-2xl">
               <h2 className="text-balance font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-                Compra el universo VXCore en{" "}
-                <span className="text-gradient">Urantix</span>
+                {t("title1")}{" "}
+                <span className="text-gradient">{t("titleAccent")}</span>
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-pretty text-sm leading-relaxed text-white/70 sm:text-base">
-                Apps, temas, plantillas y herramientas creadas por el equipo de
-                VXCore — disponibles en exclusiva en la tienda Urantix. Una
-                cuenta, todos los productos.
+                {t("description")}
               </p>
             </div>
 
@@ -67,9 +68,9 @@ export function UrantixBanner() {
                   href={URANTIX_STORE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Visita la tienda de Urantix (se abre en una pestaña nueva)"
+                  aria-label={t("visitStoreAria")}
                 >
-                  Visitar la tienda
+                  {t("visitStore")}
                   <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               </Button>
@@ -82,9 +83,9 @@ export function UrantixBanner() {
                   href={URANTIX_STORE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Abrir urantix.com (se abre en una pestaña nueva)"
+                  aria-label={t("openUrantixAria")}
                 >
-                  urantix.com
+                  {t("openUrantix")}
                 </a>
               </Button>
             </div>

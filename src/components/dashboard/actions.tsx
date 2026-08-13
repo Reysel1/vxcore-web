@@ -1,12 +1,13 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Copy, CreditCard, Loader2, LogOut } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { startCheckout } from "@/lib/checkout";
 
 /* ------------------------------------------------------------------ */
@@ -15,6 +16,7 @@ import { startCheckout } from "@/lib/checkout";
 
 export function CheckoutButton() {
   const router = useRouter();
+  const t = useTranslations("dashboard");
   const [loading, setLoading] = React.useState(false);
 
   async function handleCheckout() {
@@ -22,7 +24,7 @@ export function CheckoutButton() {
     const result = await startCheckout();
     if (result === "login") {
       // Sesión caducada: de vuelta al login.
-      router.push("/?login=1");
+      router.push({ pathname: "/", query: { login: "1" } });
     }
     setLoading(false);
   }
@@ -34,7 +36,7 @@ export function CheckoutButton() {
       ) : (
         <CreditCard className="size-4" />
       )}
-      {loading ? "Abriendo pago…" : "Pagar con Stripe"}
+      {loading ? t("opening") : t("payStripe")}
     </Button>
   );
 }
@@ -44,6 +46,7 @@ export function CheckoutButton() {
 /* ------------------------------------------------------------------ */
 
 export function CopyLicenseKey({ licenseKey }: { licenseKey: string }) {
+  const t = useTranslations("dashboard");
   const [copied, setCopied] = React.useState(false);
 
   async function copy() {
@@ -58,7 +61,7 @@ export function CopyLicenseKey({ licenseKey }: { licenseKey: string }) {
       ta.remove();
     }
     setCopied(true);
-    toast.success("Licencia copiada al portapapeles");
+    toast.success(t("copiedToast"));
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -70,7 +73,7 @@ export function CopyLicenseKey({ licenseKey }: { licenseKey: string }) {
       onClick={copy}
     >
       {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-      {copied ? "Copiada" : "Copiar"}
+      {copied ? t("copied") : t("copy")}
     </Button>
   );
 }
@@ -81,6 +84,8 @@ export function CopyLicenseKey({ licenseKey }: { licenseKey: string }) {
 
 export function AutoCheckout() {
   const router = useRouter();
+  const locale = useLocale();
+  const dashboardPath = getPathname({ href: "/dashboard", locale });
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -89,14 +94,14 @@ export function AutoCheckout() {
     (async () => {
       const result = await startCheckout();
       if (result === "login") {
-        router.push("/?login=1");
+        router.push({ pathname: "/", query: { login: "1" } });
         return;
       }
       // Si nos quedamos en la página (error o Stripe sin configurar),
       // limpiamos el intento para que recargar no reintente el pago solo.
-      window.history.replaceState({}, "", "/dashboard");
+      window.history.replaceState({}, "", dashboardPath);
     })();
-  }, [router]);
+  }, [router, dashboardPath]);
 
   return null;
 }
@@ -106,15 +111,19 @@ export function AutoCheckout() {
 /* ------------------------------------------------------------------ */
 
 export function SignOutButton({ variant = "outline" }: { variant?: "outline" | "ghost" }) {
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
+  const homePath = getPathname({ href: "/", locale });
+
   return (
     <Button
       variant={variant}
       size="sm"
       className="gap-1.5 text-muted-foreground"
-      onClick={() => signOut({ callbackUrl: "/" })}
+      onClick={() => signOut({ callbackUrl: homePath })}
     >
       <LogOut className="size-4" />
-      Salir
+      {t("logout")}
     </Button>
   );
 }
@@ -124,16 +133,20 @@ export function SignOutButton({ variant = "outline" }: { variant?: "outline" | "
 /* ------------------------------------------------------------------ */
 
 export function PaymentStatusToast() {
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
+  const dashboardPath = getPathname({ href: "/dashboard", locale });
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "1") {
-      toast.success("Pago recibido. Tu licencia ya está disponible.");
-      window.history.replaceState({}, "", "/dashboard");
+      toast.success(t("successToast"));
+      window.history.replaceState({}, "", dashboardPath);
     } else if (params.get("canceled") === "1") {
-      toast.info("Pago cancelado. Puedes intentarlo cuando quieras.");
-      window.history.replaceState({}, "", "/dashboard");
+      toast.info(t("canceledToast"));
+      window.history.replaceState({}, "", dashboardPath);
     }
-  }, []);
+  }, [t, dashboardPath]);
 
   return null;
 }

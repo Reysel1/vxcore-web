@@ -12,12 +12,13 @@ import {
   TicketPlus,
   TicketX,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type Msg = {
@@ -44,32 +45,40 @@ type Ticket = {
 const TICKET_POLL_MS = 5000;
 const MSG_POLL_MS = 4000;
 
-function formatDate(sqlDate?: string | null) {
+const DATE_LOCALES: Record<string, string> = {
+  es: "es-ES",
+  en: "en-US",
+  fr: "fr-FR",
+};
+
+function formatDate(sqlDate?: string | null, locale = "es-ES") {
   if (!sqlDate) return "";
   const d = new Date(sqlDate.replace(" ", "T") + "Z");
   const today = new Date();
   const sameDay = d.toDateString() === today.toDateString();
-  const time = d.toLocaleTimeString("es-ES", {
+  const time = d.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
   return sameDay
     ? time
-    : `${d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} · ${time}`;
+    : `${d.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${time}`;
 }
 
 /** Estrellas de solo lectura para mostrar una valoración guardada. */
 function StarRating({
   value,
   className,
+  label,
 }: {
   value: number;
   className?: string;
+  label: string;
 }) {
   return (
     <span
       className={cn("inline-flex items-center gap-0.5", className)}
-      aria-label={`Valoración: ${value} de 5`}
+      aria-label={label}
     >
       {Array.from({ length: 5 }, (_, i) => i + 1).map((n) => (
         <Star
@@ -87,20 +96,25 @@ function StarRating({
 }
 
 function StatusChip({ status }: { status: "open" | "closed" }) {
+  const t = useTranslations("tickets");
   return status === "open" ? (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
       <span className="size-1.5 rounded-full bg-emerald-500" />
-      Abierto
+      {t("open")}
     </span>
   ) : (
     <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted/40 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-      Cerrado
+      {t("closed")}
     </span>
   );
 }
 
 export function UserTickets() {
   const router = useRouter();
+  const t = useTranslations("tickets");
+  const err = useTranslations("tickets.errors");
+  const locale = useLocale();
+  const dateLocale = DATE_LOCALES[locale] ?? "es-ES";
 
   // Tickets del usuario.
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
@@ -151,12 +165,16 @@ export function UserTickets() {
     });
   }
 
+  function goToLogin() {
+    router.push({ pathname: "/", query: { login: "1" } });
+  }
+
   /* ---------- lista de tickets ---------- */
   const loadTickets = React.useCallback(async () => {
     try {
       const res = await fetch("/api/tickets");
       if (res.status === 401) {
-        router.push("/?login=1");
+        router.push({ pathname: "/", query: { login: "1" } });
         return;
       }
       const data = await res.json();
@@ -249,12 +267,12 @@ export function UserTickets() {
         body: JSON.stringify({ message: body }),
       });
       if (res.status === 401) {
-        router.push("/?login=1");
+        goToLogin();
         return;
       }
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "No se pudo enviar el mensaje.");
+        toast.error(data.error ?? err("send"));
         return;
       }
       const created = data.message as Msg;
@@ -266,7 +284,7 @@ export function UserTickets() {
       setDraft("");
       loadTickets();
     } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
+      toast.error(err("network"));
     } finally {
       setSending(false);
     }
@@ -284,12 +302,12 @@ export function UserTickets() {
         body: JSON.stringify({ subject }),
       });
       if (res.status === 401) {
-        router.push("/?login=1");
+        goToLogin();
         return;
       }
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "No se pudo abrir el ticket.");
+        toast.error(data.error ?? err("open"));
         return;
       }
       const created = data.ticket as Ticket;
@@ -301,10 +319,10 @@ export function UserTickets() {
       setRatingDismissed(false);
       selectedIdRef.current = Number(created.id);
       setSelectedId(Number(created.id));
-      toast.success("Ticket abierto. Escríbenos lo que necesites.");
+      toast.success(t("openSuccessToast"));
       await loadTickets();
     } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
+      toast.error(err("network"));
     } finally {
       setOpening(false);
     }
@@ -317,19 +335,19 @@ export function UserTickets() {
     try {
       const res = await fetch("/api/ticket/close", { method: "POST" });
       if (res.status === 401) {
-        router.push("/?login=1");
+        goToLogin();
         return;
       }
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "No se pudo cerrar el ticket.");
+        toast.error(data.error ?? err("close"));
         return;
       }
       setRatingDismissed(false);
-      toast.success("Ticket cerrado. ¡Gracias!");
+      toast.success(t("closedThanks"));
       await loadTickets();
     } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
+      toast.error(err("network"));
     } finally {
       setClosing(false);
     }
@@ -351,18 +369,18 @@ export function UserTickets() {
         }),
       });
       if (res.status === 401) {
-        router.push("/?login=1");
+        goToLogin();
         return;
       }
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "No se pudo enviar la valoración.");
+        toast.error(data.error ?? err("rate"));
         return;
       }
-      toast.success("¡Gracias por tu valoración!");
+      toast.success(t("ratedToast"));
       await loadTickets();
     } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
+      toast.error(err("network"));
     } finally {
       setRatingSending(false);
     }
@@ -372,9 +390,7 @@ export function UserTickets() {
     <div className="max-h-64 overflow-y-auto rounded-lg border border-border bg-muted/20">
       {messages.length === 0 ? (
         <p className="px-3.5 py-6 text-center text-sm text-muted-foreground">
-          {selectedOpen
-            ? "Este ticket está listo para empezar. Escríbenos y te responderemos aquí."
-            : "Esta conversación no tiene mensajes."}
+          {selectedOpen ? t("startConversation") : t("noMessages")}
         </p>
       ) : (
         <div className="divide-y divide-border">
@@ -391,13 +407,13 @@ export function UserTickets() {
                     : "bg-background text-muted-foreground ring-1 ring-border"
                 )}
               >
-                {m.sender === "user" ? "Tú" : "Staff"}
+                {m.sender === "user" ? t("you") : t("staff")}
               </span>
               <p className="min-w-0 flex-1 text-sm leading-relaxed">
                 {m.body}
               </p>
               <span className="shrink-0 text-[10px] text-muted-foreground">
-                {formatDate(m.created_at)}
+                {formatDate(m.created_at, dateLocale)}
               </span>
             </div>
           ))}
@@ -412,12 +428,14 @@ export function UserTickets() {
       <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Ticket className="size-4 text-muted-foreground" />
-          Tickets de soporte
+          {t("title")}
         </CardTitle>
         {tickets.length > 0 && (
           <span className="text-xs text-muted-foreground">
-            {tickets.filter((t) => t.status === "open").length} abiertos ·{" "}
-            {tickets.filter((t) => t.status === "closed").length} cerrados
+            {t("openCount", {
+              open: tickets.filter((t) => t.status === "open").length,
+              closed: tickets.filter((t) => t.status === "closed").length,
+            })}
           </span>
         )}
       </CardHeader>
@@ -426,24 +444,24 @@ export function UserTickets() {
         {loading && tickets.length === 0 ? (
           <div className="flex h-28 items-center justify-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 size-4 animate-spin" />
-            Cargando…
+            {t("loading")}
           </div>
         ) : (
           <>
             {/* Lista de tickets */}
             {tickets.length > 0 && (
               <div className="flex flex-col gap-2">
-                {tickets.map((t) => (
+                {tickets.map((ticket) => (
                   <button
-                    key={t.id}
+                    key={ticket.id}
                     type="button"
                     onClick={() => {
-                      selectedIdRef.current = t.id;
-                      setSelectedId(t.id);
+                      selectedIdRef.current = ticket.id;
+                      setSelectedId(ticket.id);
                     }}
                     className={cn(
                       "flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors",
-                      selected?.id === t.id
+                      selected?.id === ticket.id
                         ? "border-foreground/40 bg-muted"
                         : "border-border bg-background hover:border-foreground/25"
                     )}
@@ -451,16 +469,22 @@ export function UserTickets() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium">
-                          {t.subject ?? `Ticket #${t.id}`}
+                          {ticket.subject ?? t("ticketLabel", { id: ticket.id })}
                         </span>
-                        {t.rating != null && <StarRating value={t.rating} />}
+                        {ticket.rating != null && (
+                          <StarRating
+                            value={ticket.rating}
+                            label={t("ratingAria", { value: ticket.rating })}
+                          />
+                        )}
                       </div>
                       <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                        Ticket #{t.id} · {formatDate(t.created_at)}
-                        {t.last_body ? ` · ${t.last_body}` : ""}
+                        {t("ticketLabel", { id: ticket.id })} ·{" "}
+                        {formatDate(ticket.created_at, dateLocale)}
+                        {ticket.last_body ? ` · ${ticket.last_body}` : ""}
                       </div>
                     </div>
-                    <StatusChip status={t.status} />
+                    <StatusChip status={ticket.status} />
                   </button>
                 ))}
               </div>
@@ -475,19 +499,16 @@ export function UserTickets() {
                 <div className="flex items-center gap-2">
                   <TicketPlus className="size-4 text-muted-foreground" />
                   <p className="text-sm font-medium">
-                    {tickets.length > 0
-                      ? "¿Necesitas ayuda de nuevo?"
-                      : "Crea un ticket para escribirnos"}
+                    {tickets.length > 0 ? t("createAgain") : t("createHint")}
                   </p>
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Cuéntanos brevemente tu problema o duda. Te respondemos aquí
-                  y todo queda guardado en el ticket.
+                  {t("createText")}
                 </p>
                 <input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="¿Sobre qué necesitas ayuda? (opcional)"
+                  placeholder={t("subjectPlaceholder")}
                   maxLength={120}
                   className="mt-3 h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                 />
@@ -498,7 +519,7 @@ export function UserTickets() {
                     ) : (
                       <TicketPlus className="size-4" />
                     )}
-                    Abrir ticket
+                    {t("openTicket")}
                   </Button>
                 </div>
               </form>
@@ -509,16 +530,19 @@ export function UserTickets() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">
-                        {selected.subject ?? `Ticket #${selected.id}`}
+                        {selected.subject ?? t("ticketLabel", { id: selected.id })}
                       </div>
                       <div className="mt-0.5 text-xs text-muted-foreground">
-                        Ticket #{selected.id} · abierto{" "}
-                        {formatDate(selected.created_at)}
+                        {t("ticketOpen", { id: selected.id })} ·{" "}
+                        {formatDate(selected.created_at, dateLocale)}
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {selected.rating != null && (
-                        <StarRating value={selected.rating} />
+                        <StarRating
+                          value={selected.rating}
+                          label={t("ratingAria", { value: selected.rating })}
+                        />
                       )}
                       {selectedOpen ? (
                         <Button
@@ -534,7 +558,7 @@ export function UserTickets() {
                           ) : (
                             <TicketX className="size-3.5" />
                           )}
-                          Cerrar ticket
+                          {t("closeTicket")}
                         </Button>
                       ) : (
                         <StatusChip status={selected.status} />
@@ -554,7 +578,7 @@ export function UserTickets() {
                       className="flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <ChevronUp className="size-3.5" />
-                      Ocultar conversación
+                      {t("hideConversation")}
                     </button>
                     {conversation}
                   </>
@@ -565,7 +589,7 @@ export function UserTickets() {
                     className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <MessageSquareText className="size-4" />
-                    Ver conversación ({messages.length} mensajes)
+                    {t("showConversation", { count: messages.length })}
                     <ChevronDown className="size-4" />
                   </button>
                 )}
@@ -582,7 +606,7 @@ export function UserTickets() {
                           handleSend(e);
                         }
                       }}
-                      placeholder="Escribe tu mensaje… (Enter para enviar)"
+                      placeholder={t("messagePlaceholder")}
                       rows={2}
                       maxLength={2000}
                       className="min-h-11 flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -597,7 +621,7 @@ export function UserTickets() {
                       ) : (
                         <Send className="size-4" />
                       )}
-                      <span className="hidden sm:inline">Enviar</span>
+                      <span className="hidden sm:inline">{t("send")}</span>
                     </Button>
                   </form>
                 ) : selectedUnrated ? (
@@ -608,9 +632,7 @@ export function UserTickets() {
                   >
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="size-4 text-emerald-500" />
-                      <p className="text-sm font-medium">
-                        ¿Cómo valoras la atención recibida?
-                      </p>
+                      <p className="text-sm font-medium">{t("rateTitle")}</p>
                     </div>
                     <div
                       className="mt-3 flex items-center gap-1"
@@ -620,7 +642,7 @@ export function UserTickets() {
                         <button
                           key={n}
                           type="button"
-                          aria-label={`${n} estrella${n > 1 ? "s" : ""}`}
+                          aria-label={t("starAria", { n })}
                           onMouseEnter={() => setRatingHover(n)}
                           onClick={() => setRating(n)}
                           className="rounded-md p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -639,7 +661,7 @@ export function UserTickets() {
                     <textarea
                       value={ratingComment}
                       onChange={(e) => setRatingComment(e.target.value)}
-                      placeholder="¿Algo que quieras comentar? (opcional)"
+                      placeholder={t("ratingCommentPlaceholder")}
                       rows={2}
                       maxLength={500}
                       className="mt-3 min-h-11 w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -652,7 +674,7 @@ export function UserTickets() {
                         onClick={() => setRatingDismissed(true)}
                         className="text-muted-foreground"
                       >
-                        Ahora no
+                        {t("rateLater")}
                       </Button>
                       <Button
                         type="submit"
@@ -664,7 +686,7 @@ export function UserTickets() {
                         ) : (
                           <Star className="size-4" />
                         )}
-                        Enviar valoración
+                        {t("rateSend")}
                       </Button>
                     </div>
                   </form>
@@ -675,11 +697,14 @@ export function UserTickets() {
                       <CheckCircle2 className="size-4 shrink-0 text-emerald-500" />
                       {selected.rating != null ? (
                         <>
-                          Gracias por tu valoración
-                          <StarRating value={selected.rating} />
+                          {t("ratedThanks")}
+                          <StarRating
+                            value={selected.rating}
+                            label={t("ratingAria", { value: selected.rating })}
+                          />
                         </>
                       ) : (
-                        "Ticket cerrado. Si necesitas algo más, abre un nuevo ticket."
+                        t("closedNew")
                       )}
                     </div>
                     <Button
@@ -690,7 +715,7 @@ export function UserTickets() {
                       className="gap-1.5"
                     >
                       <TicketPlus className="size-3.5" />
-                      Abrir nuevo ticket
+                      {t("openNewTicket")}
                     </Button>
                   </div>
                 )}

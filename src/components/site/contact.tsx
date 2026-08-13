@@ -1,6 +1,7 @@
 "use client";
 
 import { Headset, Loader2, MessageSquareText, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -10,27 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SectionHeading } from "@/components/site/section-heading";
 
-const CHANNELS = [
-  {
-    title: "Habla con el staff",
-    description:
-      "Tu mensaje llega directo al equipo que construye VXCore. Respondemos personalmente, sin bots.",
-  },
-  {
-    title: "Respuesta en menos de 24 h",
-    description:
-      "Los mensajes se atienden en orden de llegada, de lunes a domingo.",
-  },
-  {
-    title: "De todo",
-    description:
-      "Bugs, ideas, facturación, licencias o simplemente saludar. Todo es bienvenido.",
-  },
-];
-
 export function Contact() {
+  const t = useTranslations("contact");
+  const form = useTranslations("contact.form");
+  const toasts = useTranslations("contact.toasts");
+  const channels = t.raw("channels") as { title: string; description: string }[];
   const [sending, setSending] = React.useState(false);
-  const [form, setForm] = React.useState({
+  const [formState, setFormState] = React.useState({
     name: "",
     email: "",
     subject: "",
@@ -39,8 +26,8 @@ export function Contact() {
     company: "",
   });
 
-  function update(field: keyof typeof form, value: string) {
-    setForm((f) => ({ ...f, [field]: value }));
+  function update(field: keyof typeof formState, value: string) {
+    setFormState((f) => ({ ...f, [field]: value }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -50,17 +37,17 @@ export function Contact() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formState),
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "No se pudo enviar el mensaje.");
+        toast.error(data.error ?? toasts("error"));
         return;
       }
-      toast.success("Mensaje enviado. Te respondemos muy pronto.");
-      setForm({ name: "", email: "", subject: "", message: "", company: "" });
+      toast.success(toasts("success"));
+      setFormState({ name: "", email: "", subject: "", message: "", company: "" });
     } catch {
-      toast.error("Error de red. Inténtalo de nuevo.");
+      toast.error(toasts("network"));
     } finally {
       setSending(false);
     }
@@ -77,18 +64,18 @@ export function Contact() {
           <div>
             <SectionHeading
               align="left"
-              eyebrow="Contacto"
+              eyebrow={t("eyebrow")}
               title={
                 <>
-                  Habla con el{" "}
-                  <span className="text-gradient">equipo</span>
+                  {t("title1")}{" "}
+                  <span className="text-gradient">{t("titleAccent")}</span>
                 </>
               }
-              description="¿Algo no va, necesitas una licencia de prueba o quieres proponer una función? Escríbenos y te lo resolvemos."
+              description={t("description")}
             />
 
             <div className="mt-10 flex flex-col gap-4">
-              {CHANNELS.map((channel) => (
+              {channels.map((channel) => (
                 <div
                   key={channel.title}
                   className="flex items-start gap-3.5 rounded-xl border border-border bg-background/60 p-4"
@@ -113,59 +100,59 @@ export function Contact() {
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 {/* Honeypot invisible (anti-bots) */}
                 <div className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-                  <Label htmlFor="contact-company">No rellenes este campo</Label>
+                  <Label htmlFor="contact-company">{form("honeypot")}</Label>
                   <Input
                     id="contact-company"
                     tabIndex={-1}
                     autoComplete="off"
-                    value={form.company}
+                    value={formState.company}
                     onChange={(e) => update("company", e.target.value)}
                   />
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="contact-name">Tu nombre</Label>
+                    <Label htmlFor="contact-name">{form("name")}</Label>
                     <Input
                       id="contact-name"
-                      value={form.name}
+                      value={formState.name}
                       onChange={(e) => update("name", e.target.value)}
-                      placeholder="Alex Rivera"
+                      placeholder={form("namePlaceholder")}
                       required
                       maxLength={120}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="contact-email">Tu email</Label>
+                    <Label htmlFor="contact-email">{form("email")}</Label>
                     <Input
                       id="contact-email"
                       type="email"
-                      value={form.email}
+                      value={formState.email}
                       onChange={(e) => update("email", e.target.value)}
-                      placeholder="tu@email.com"
+                      placeholder={form("emailPlaceholder")}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="contact-subject">Asunto</Label>
+                  <Label htmlFor="contact-subject">{form("subject")}</Label>
                   <Input
                     id="contact-subject"
-                    value={form.subject}
+                    value={formState.subject}
                     onChange={(e) => update("subject", e.target.value)}
-                    placeholder="¿En qué podemos ayudarte?"
+                    placeholder={form("subjectPlaceholder")}
                     required
                     maxLength={200}
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="contact-message">Mensaje</Label>
+                  <Label htmlFor="contact-message">{form("message")}</Label>
                   <textarea
                     id="contact-message"
-                    value={form.message}
+                    value={formState.message}
                     onChange={(e) => update("message", e.target.value)}
-                    placeholder="Cuéntanos con detalle qué necesitas…"
+                    placeholder={form("messagePlaceholder")}
                     required
                     maxLength={4000}
                     rows={6}
@@ -179,13 +166,12 @@ export function Contact() {
                   ) : (
                     <Send className="size-4" />
                   )}
-                  {sending ? "Enviando…" : "Enviar mensaje"}
+                  {sending ? form("sending") : form("send")}
                 </Button>
 
                 <p className="flex items-start gap-2 text-xs text-muted-foreground">
                   <Headset className="mt-0.5 size-3.5 shrink-0" />
-                  Tu mensaje lo lee el equipo real de VXCore. Nunca lo usamos
-                  para spam.
+                  {form("note")}
                 </p>
               </form>
             </CardContent>

@@ -9,9 +9,27 @@ import {
   Zap,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import { SectionHeading } from "@/components/site/section-heading";
+import { InlineText } from "@/components/site/inline-text";
+
+type MockStrings = {
+  saved: string;
+  agentDetected: string;
+  explain: string;
+  reconnect: string;
+  nightRestart: string;
+  autoRestart: string;
+  ifHangs: string;
+  uptime: string;
+  online: string;
+  install: string;
+  live: string;
+  last12h: string;
+  t247: string;
+};
 
 /* ---------- Mini mockups (estética del panel real) ---------- */
 
@@ -92,7 +110,7 @@ function MiniLogs() {
   );
 }
 
-function MiniAgent() {
+function MiniAgent({ mock }: { mock: MockStrings }) {
   return (
     <div className="w-full max-w-72 space-y-2">
       <div className="flex items-start gap-2">
@@ -100,23 +118,22 @@ function MiniAgent() {
           <Bot className="size-3.5" />
         </span>
         <div className="rounded-lg rounded-tl-sm bg-muted/60 px-3 py-2 text-xs leading-relaxed text-foreground/85">
-          Detecté que <span className="font-medium text-foreground">oxmysql</span>{" "}
-          perdió la conexión a las 03:12. ¿Quieres que revise la config?
+          <InlineText text={mock.agentDetected} />
         </div>
       </div>
       <div className="flex gap-1.5 pl-8">
         <span className="rounded-md border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          Explicar
+          {mock.explain}
         </span>
         <span className="rounded-md border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          Reconectar
+          {mock.reconnect}
         </span>
       </div>
     </div>
   );
 }
 
-function MiniEditor() {
+function MiniEditor({ mock }: { mock: MockStrings }) {
   return (
     <div className="w-full max-w-72 overflow-hidden rounded-lg border border-border/70">
       <div className="flex items-center gap-1.5 border-b border-border/70 bg-muted/40 px-3 py-1.5">
@@ -125,7 +142,7 @@ function MiniEditor() {
           fxmanifest.lua
         </span>
         <span className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-emerald-500" /> guardado
+          <span className="size-1.5 rounded-full bg-emerald-500" /> {mock.saved}
         </span>
       </div>
       <div className="bg-[#0a0a10] p-3 font-mono text-[11px] leading-relaxed">
@@ -150,7 +167,7 @@ function MiniEditor() {
   );
 }
 
-function MiniMarket() {
+function MiniMarket({ mock }: { mock: MockStrings }) {
   const products = [
     { name: "UrantixDealership", meta: "Vehículos · $24.99" },
     { name: "qb-core UI Pack", meta: "Interfaz · $12.00" },
@@ -170,7 +187,7 @@ function MiniMarket() {
             <div className="text-[10px] text-muted-foreground">{p.meta}</div>
           </div>
           <span className="ml-auto shrink-0 text-[10px] font-medium text-muted-foreground">
-            instalar
+            {mock.install}
           </span>
         </div>
       ))}
@@ -178,16 +195,16 @@ function MiniMarket() {
   );
 }
 
-function MiniMonitor() {
+function MiniMonitor({ mock }: { mock: MockStrings }) {
   const bars = [45, 70, 52, 82, 60, 90, 74, 100, 86, 94, 88, 99];
   return (
     <div className="w-full max-w-72">
       <div className="flex items-center justify-between px-0.5 text-[10px] text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-emerald-500" />
-          en vivo · red VXCore
+          {mock.live}
         </span>
-        <span className="font-mono">99.9% uptime</span>
+        <span className="font-mono">99.9% {mock.uptime}</span>
       </div>
       <div className="mt-2 flex h-20 items-end gap-1 rounded-lg border border-border/70 bg-[#0a0a10] p-2">
         {bars.map((b, i) => (
@@ -199,8 +216,8 @@ function MiniMonitor() {
         ))}
       </div>
       <div className="mt-1.5 flex justify-between px-0.5 text-[10px] text-muted-foreground">
-        <span>últimas 12 horas</span>
-        <span>24/7</span>
+        <span>{mock.last12h}</span>
+        <span>{mock.t247}</span>
       </div>
     </div>
   );
@@ -214,14 +231,14 @@ function Toggle() {
   );
 }
 
-function MiniAuto() {
+function MiniAuto({ mock }: { mock: MockStrings }) {
   return (
     <div className="w-full max-w-72 space-y-1.5">
       <div className="flex items-center gap-2.5 rounded-md bg-muted/40 px-2.5 py-2">
         <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
           <TimerReset className="size-3.5" />
         </span>
-        <div className="text-xs font-medium">Reinicio nocturno</div>
+        <div className="text-xs font-medium">{mock.nightRestart}</div>
         <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">
           04:00
         </span>
@@ -232,12 +249,8 @@ function MiniAuto() {
           <Zap className="size-3.5" />
         </span>
         <div className="min-w-0">
-          <div className="truncate text-xs font-medium">
-            Restart qb-core automático
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            si se cuelga · cada 10 min
-          </div>
+          <div className="truncate text-xs font-medium">{mock.autoRestart}</div>
+          <div className="text-[10px] text-muted-foreground">{mock.ifHangs}</div>
         </div>
         <Toggle />
       </div>
@@ -247,113 +260,96 @@ function MiniAuto() {
 
 /* ---------- Bento grid ---------- */
 
-const FEATURES = [
-  {
-    Icon: Server,
-    className: "md:col-span-2",
-    label: "VXCore · console",
-    background: (
-      <MockupBg label="VXCore · console">
-        <MiniConsole />
-      </MockupBg>
-    ),
-    title: "Consola RCON interactiva",
-    description:
-      "Terminal bidireccional en tiempo real por WebSocket. Envía comandos y ve la salida al instante, con historial y acciones rápidas.",
-  },
-  {
-    Icon: Bot,
-    className: "md:col-span-1",
-    label: "VXCore · agent",
-    background: (
-      <MockupBg label="VXCore · agent">
-        <MiniAgent />
-      </MockupBg>
-    ),
-    title: "Agente VXCore",
-    description:
-      "Un copiloto de IA conectado a tu servidor: monitoriza, explica errores y propone cambios. Nada se guarda sin tu permiso.",
-  },
-  {
-    Icon: ScrollText,
-    className: "md:col-span-1",
-    label: "VXCore · logs",
-    background: (
-      <MockupBg label="VXCore · logs">
-        <MiniLogs />
-      </MockupBg>
-    ),
-    title: "Logs globales",
-    description:
-      "Toda la salida de tu servidor filtrada por nivel y recurso. Histórico en disco y exportación con un clic.",
-  },
-  {
-    Icon: FileCode2,
-    className: "md:col-span-1",
-    label: "VXCore · editor",
-    background: (
-      <MockupBg label="VXCore · editor">
-        <MiniEditor />
-      </MockupBg>
-    ),
-    title: "Editor de recursos",
-    description:
-      "Explora y edita tus recursos desde el panel, sin FTP ni SSH. Guarda con copia de seguridad automática.",
-  },
-  {
-    Icon: ShoppingBag,
-    className: "md:col-span-1",
-    label: "VXCore · market",
-    background: (
-      <MockupBg label="VXCore · market">
-        <MiniMarket />
-      </MockupBg>
-    ),
-    title: "Marketplace integrado",
-    description:
-      "Compra e instala recursos y scripts desde la tienda Urantix en dos clics, sin salir del panel.",
-  },
-  {
-    Icon: Activity,
-    className: "md:col-span-1",
-    label: "VXCore · monitor",
-    background: (
-      <MockupBg label="VXCore · monitor">
-        <MiniMonitor />
-      </MockupBg>
-    ),
-    title: "Monitorización 24/7",
-    description:
-      "Estado de tu servidor en tiempo real: uptime, jugadores y latencia monitorizados de forma continua.",
-  },
-  {
-    Icon: Zap,
-    className: "md:col-span-2",
-    label: "VXCore · automate",
-    background: (
-      <MockupBg label="VXCore · automate">
-        <MiniAuto />
-      </MockupBg>
-    ),
-    title: "Automatizaciones",
-    description:
-      "Reinicios, comandos y acciones programadas. Define reglas y deja que VXCore se encargue del resto.",
-  },
-];
+export async function Features() {
+  const t = await getTranslations("features");
+  const mock = t.raw("mock") as MockStrings;
+  const items = t.raw("items") as { title: string; description: string }[];
 
-export function Features() {
+  const FEATURES = [
+    {
+      Icon: Server,
+      className: "md:col-span-2",
+      background: (
+        <MockupBg label="VXCore · console">
+          <MiniConsole />
+        </MockupBg>
+      ),
+      ...items[0],
+    },
+    {
+      Icon: Bot,
+      className: "md:col-span-1",
+      background: (
+        <MockupBg label="VXCore · agent">
+          <MiniAgent mock={mock} />
+        </MockupBg>
+      ),
+      ...items[1],
+    },
+    {
+      Icon: ScrollText,
+      className: "md:col-span-1",
+      background: (
+        <MockupBg label="VXCore · logs">
+          <MiniLogs />
+        </MockupBg>
+      ),
+      ...items[2],
+    },
+    {
+      Icon: FileCode2,
+      className: "md:col-span-1",
+      background: (
+        <MockupBg label="VXCore · editor">
+          <MiniEditor mock={mock} />
+        </MockupBg>
+      ),
+      ...items[3],
+    },
+    {
+      Icon: ShoppingBag,
+      className: "md:col-span-1",
+      background: (
+        <MockupBg label="VXCore · market">
+          <MiniMarket mock={mock} />
+        </MockupBg>
+      ),
+      ...items[4],
+    },
+    {
+      Icon: Activity,
+      className: "md:col-span-1",
+      background: (
+        <MockupBg label="VXCore · monitor">
+          <MiniMonitor mock={mock} />
+        </MockupBg>
+      ),
+      ...items[5],
+    },
+    {
+      Icon: Zap,
+      className: "md:col-span-2",
+      background: (
+        <MockupBg label="VXCore · automate">
+          <MiniAuto mock={mock} />
+        </MockupBg>
+      ),
+      ...items[6],
+    },
+  ];
+
   return (
     <section id="features" className="relative scroll-mt-24 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="Características"
+          eyebrow={t("eyebrow")}
           title={
             <>
-              Todo lo que tu servidor necesita.{" "}
-              <span className="text-gradient">Nada de lo que no.</span>
+              {t("title1")}{" "}
+              <span className="text-gradient">{t("titleAccent")}</span>
             </>
           }
-          description="VXCore convierte la gestión de tu servidor FXServer en una experiencia simple, rápida y segura — desde la primera conexión hasta el escalado de tu comunidad."
+          description={t("description")}
         />
 
         <BentoGrid className="mt-14">
@@ -366,7 +362,7 @@ export function Features() {
               className={className}
               background={background}
               href="#product"
-              cta="Ver demostración"
+              cta={t("cta")}
             />
           ))}
         </BentoGrid>

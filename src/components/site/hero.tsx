@@ -1,12 +1,16 @@
 import { ArrowRight, Play } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { Button } from "@/components/ui/button";
 import { PanelDemo } from "@/components/site/panel-demo";
 import { Reveal } from "@/components/site/reveal";
+import { Link } from "@/i18n/navigation";
 
-export function Hero() {
+export async function Hero() {
+  const t = await getTranslations("hero");
+
   return (
     <section id="top" className="relative overflow-hidden pb-24 pt-32 sm:pb-32 sm:pt-40">
       {/* Background decorations */}
@@ -31,31 +35,29 @@ export function Hero() {
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
         <Reveal delay={0}>
           <h1 className="mx-auto max-w-3xl text-balance font-heading text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
-            Controla tu servidor FiveM desde{" "}
-            <span className="text-gradient">un único núcleo</span>
+            {t("title1")}{" "}
+            <span className="text-gradient">{t("titleAccent")}</span>
           </h1>
         </Reveal>
 
         <Reveal delay={160}>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-            VXCore une servidores, recursos, logs y automatizaciones en un solo
-            panel — con un agente de IA que monitoriza, edita y responde a tu
-            servidor en tiempo real.
+            {t("description")}
           </p>
         </Reveal>
 
         <Reveal delay={240}>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <RainbowButton asChild className="group h-11 gap-2 rounded-xl px-6 text-base">
-              <a href="/dashboard">
-                Empezar gratis
+              <Link href="/dashboard">
+                {t("startFree")}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </a>
+              </Link>
             </RainbowButton>
             <Button asChild variant="outline" className="h-11 gap-2 px-6 text-base">
               <a href="#demo">
                 <Play className="size-4 fill-current" />
-                Ver demostración
+                {t("viewDemo")}
               </a>
             </Button>
           </div>

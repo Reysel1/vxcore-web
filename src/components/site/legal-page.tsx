@@ -1,8 +1,79 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/site/logo";
-import { LEGAL_LINKS, LEGAL_UPDATED_AT } from "@/lib/site";
+import { InlineText } from "@/components/site/inline-text";
+
+export type LegalBlock =
+  | { type: "p"; text: string }
+  | { type: "note"; text: string }
+  | { type: "list"; items: string[] }
+  | {
+      type: "table";
+      head: string[];
+      rows: { name: string; purpose: string; duration: string }[];
+    };
+
+export type LegalSection = { heading: string; blocks: LegalBlock[] };
+
+function Block({ block }: { block: LegalBlock }) {
+  if (block.type === "note") {
+    return (
+      <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-700 dark:text-amber-300">
+        <InlineText text={block.text} />
+      </p>
+    );
+  }
+  if (block.type === "list") {
+    return (
+      <ul className="list-disc space-y-1.5 pl-5">
+        {block.items.map((item) => (
+          <li key={item}>
+            <InlineText text={item} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (block.type === "table") {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[34rem] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              {block.head.map((h) => (
+                <th key={h} className="py-2 pr-4 font-semibold">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.rows.map((row) => (
+              <tr key={row.name} className="border-b border-border/50">
+                <td className="py-3 pr-4 align-top font-mono text-xs">
+                  {row.name}
+                </td>
+                <td className="py-3 pr-4 align-top text-muted-foreground">
+                  {row.purpose}
+                </td>
+                <td className="py-3 align-top text-muted-foreground">
+                  {row.duration}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  return (
+    <p>
+      <InlineText text={block.text} />
+    </p>
+  );
+}
 
 /**
  * Marco común de las páginas legales.
@@ -11,15 +82,19 @@ import { LEGAL_LINKS, LEGAL_UPDATED_AT } from "@/lib/site";
  * ser enlazables por sí mismas: es lo que piden Stripe, las tiendas de apps y
  * cualquiera que quiera leerlas sin pasar por el resto del sitio.
  */
-export function LegalPage({
+export async function LegalPage({
   title,
   intro,
-  children,
+  sections,
 }: {
   title: string;
   intro: string;
-  children: React.ReactNode;
+  sections: LegalSection[];
 }) {
+  const t = await getTranslations("legal");
+  const common = await getTranslations("common");
+  const nav = t.raw("nav") as Record<"terms" | "privacy" | "cookies", string>;
+
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">
@@ -29,7 +104,7 @@ export function LegalPage({
             className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
-            Volver
+            {common("back")}
           </Link>
           <Logo />
           <div className="w-16" />
@@ -42,15 +117,30 @@ export function LegalPage({
         </h1>
         <p className="mt-3 text-muted-foreground">{intro}</p>
         <p className="mt-2 text-xs text-muted-foreground">
-          Última actualización: {LEGAL_UPDATED_AT}
+          {t("updated", { date: t("updatedAt") })}
         </p>
 
         <div className="mt-10 space-y-8 text-sm leading-relaxed text-foreground/85">
-          {children}
+          {sections.map((section) => (
+            <section key={section.heading} className="space-y-3">
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                {section.heading}
+              </h2>
+              {section.blocks.map((block, i) => (
+                <Block key={i} block={block} />
+              ))}
+            </section>
+          ))}
         </div>
 
         <nav className="mt-14 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-6 text-sm">
-          {LEGAL_LINKS.map((link) => (
+          {(
+            [
+              { href: "/terminos", label: nav.terms },
+              { href: "/privacidad", label: nav.privacy },
+              { href: "/cookies", label: nav.cookies },
+            ] as const
+          ).map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -62,23 +152,5 @@ export function LegalPage({
         </nav>
       </main>
     </div>
-  );
-}
-
-/** Sección con encabezado, para no repetir clases en cada apartado. */
-export function LegalSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="space-y-3">
-      <h2 className="font-heading text-lg font-semibold text-foreground">
-        {title}
-      </h2>
-      {children}
-    </section>
   );
 }

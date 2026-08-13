@@ -1,3 +1,5 @@
+import { getLocale, getTranslations } from "next-intl/server";
+
 import { SITE_NAME, SITE_URL, SOCIAL_LINKS, URANTIX_STORE_URL } from "@/lib/site";
 
 /**
@@ -13,7 +15,10 @@ import { SITE_NAME, SITE_URL, SOCIAL_LINKS, URANTIX_STORE_URL } from "@/lib/site
  */
 const PRICE_EUR = "27";
 
-export function StructuredData() {
+export async function StructuredData() {
+  const locale = await getLocale();
+  const t = await getTranslations("meta");
+
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
@@ -29,7 +34,7 @@ export function StructuredData() {
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
         name: SITE_NAME,
-        inLanguage: "es-ES",
+        inLanguage: locale,
         publisher: { "@id": `${SITE_URL}/#organization` },
       },
       {
@@ -37,11 +42,10 @@ export function StructuredData() {
         "@id": `${SITE_URL}/#software`,
         name: SITE_NAME,
         applicationCategory: "DeveloperApplication",
-        applicationSubCategory: "Panel de control de servidores de juego",
+        applicationSubCategory: t("structuredSubcategory"),
         operatingSystem: "Windows",
         url: SITE_URL,
-        description:
-          "Panel de control para servidores FiveM (FXServer): consola RCON, logs, base de datos, automatizaciones y un agente de IA conectado a tu servidor.",
+        description: t("structuredDescription"),
         publisher: { "@id": `${SITE_URL}/#organization` },
         offers: {
           "@type": "Offer",

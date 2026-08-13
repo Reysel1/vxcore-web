@@ -15,6 +15,7 @@ import {
   User,
   Wrench,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionHeading } from "@/components/site/section-heading";
 import { cn } from "@/lib/utils";
+
+type ShowcaseT = ReturnType<typeof useTranslations>;
 
 /* ------------------------------------------------------------------ */
 /* Widget frame (ventana de app)                                       */
@@ -91,7 +94,7 @@ const RESPONSES: Record<string, string> = {
   "ensure fiveos": "[script:fiveos] already running",
 };
 
-function ConsoleWidget() {
+function ConsoleWidget({ t }: { t: ShowcaseT }) {
   const [lines, setLines] = React.useState<Line[]>(INITIAL_LINES);
   const [input, setInput] = React.useState("");
   const idRef = React.useRef(100);
@@ -121,7 +124,7 @@ function ConsoleWidget() {
     window.setTimeout(() => {
       const reply =
         RESPONSES[cmd.toLowerCase()] ??
-        `[server] comando "${cmd}" ejecutado sin errores`;
+        t("console.executed", { cmd });
       push(cmd.toLowerCase().includes("restart") ? "ok" : "info", reply);
     }, 320);
   };
@@ -132,17 +135,17 @@ function ConsoleWidget() {
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/70">
           <span className="size-1.5 rounded-full bg-emerald-500" />
-          WebSocket conectado
+          {t("console.connected")}
         </span>
         <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">
-          {lines.length - INITIAL_LINES.length + 800} eventos registrados
+          {t("console.events", { count: lines.length - INITIAL_LINES.length + 800 })}
         </span>
       </div>
 
       {/* Acciones rápidas */}
       <div className="flex items-center gap-1.5 overflow-x-auto border-b border-border px-3 py-2">
         <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Acciones
+          {t("console.actions")}
         </span>
         {QUICK_ACTIONS.map(({ label, Icon }) => (
           <button
@@ -188,14 +191,14 @@ function ConsoleWidget() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && runCommand(input)}
-          placeholder="Escribe un comando RCON…"
-          aria-label="Comando RCON"
+          placeholder={t("console.placeholder")}
+          aria-label={t("console.commandAria")}
           className="h-8 border-0 bg-transparent font-mono text-xs shadow-none focus-visible:ring-0"
         />
         <Button
           size="icon"
           onClick={() => runCommand(input)}
-          aria-label="Ejecutar comando"
+          aria-label={t("console.runAria")}
           className="size-8 shrink-0"
         >
           <Send className="size-3.5" />
@@ -216,25 +219,31 @@ type LogRow = {
   message: string;
 };
 
-const LOGS: LogRow[] = [
-  { level: "ERROR", time: "12:04:01", resource: "oxmysql", message: "conexión perdida con el servidor de base de datos" },
-  { level: "WARN", time: "12:03:41", resource: "qb-core", message: "query lenta detectada · 1.2s" },
-  { level: "INFO", time: "12:03:22", resource: "esx", message: "resource esx loaded · 25 scripts" },
-  { level: "INFO", time: "12:02:58", resource: "fiveos", message: "jugador conectado · license validada" },
-  { level: "DEBUG", time: "12:02:11", resource: "UrantixDealership", message: "CREATE TABLE utx_dealership_financing ok" },
-  { level: "WARN", time: "12:01:47", resource: "txAdmin", message: "heartbeat retrasado · 2.4s" },
-  { level: "INFO", time: "12:00:00", resource: "core", message: "servidor iniciado · 38 recursos" },
+const LOG_DEFS: Omit<LogRow, "message">[] = [
+  { level: "ERROR", time: "12:04:01", resource: "oxmysql" },
+  { level: "WARN", time: "12:03:41", resource: "qb-core" },
+  { level: "INFO", time: "12:03:22", resource: "esx" },
+  { level: "INFO", time: "12:02:58", resource: "fiveos" },
+  { level: "DEBUG", time: "12:02:11", resource: "UrantixDealership" },
+  { level: "WARN", time: "12:01:47", resource: "txAdmin" },
+  { level: "INFO", time: "12:00:00", resource: "core" },
 ];
 
-function LogsWidget() {
+function LogsWidget({ t }: { t: ShowcaseT }) {
   const [filter, setFilter] = React.useState<LogRow["level"] | "all">("all");
   const [query, setQuery] = React.useState("");
+
+  const rowMessages = t.raw("logs.rows") as { message: string }[];
+  const LOGS: LogRow[] = LOG_DEFS.map((row, i) => ({
+    ...row,
+    message: rowMessages[i]?.message ?? "",
+  }));
 
   const counts = React.useMemo(() => {
     const c: Record<string, number> = { all: LOGS.length };
     for (const l of LOGS) c[l.level] = (c[l.level] ?? 0) + 1;
     return c;
-  }, []);
+  }, [LOGS]);
 
   const visible = LOGS.filter(
     (l) =>
@@ -262,7 +271,7 @@ function LogsWidget() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              {f === "all" ? "Todos" : f}
+              {f === "all" ? t("logs.all") : f}
               <span className="ml-1 tabular-nums opacity-70">{counts[f] ?? 0}</span>
             </button>
           ))}
@@ -272,8 +281,8 @@ function LogsWidget() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar en logs…"
-            aria-label="Buscar en logs"
+            placeholder={t("logs.searchPlaceholder")}
+            aria-label={t("logs.searchAria")}
             className="h-8 pl-7 text-xs"
           />
         </div>
@@ -285,16 +294,16 @@ function LogsWidget() {
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               <TableHead className="px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Nivel
+                {t("logs.level")}
               </TableHead>
               <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Recurso
+                {t("logs.resource")}
               </TableHead>
               <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Mensaje
+                {t("logs.message")}
               </TableHead>
               <TableHead className="px-3 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Hora
+                {t("logs.time")}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -323,7 +332,7 @@ function LogsWidget() {
                   colSpan={4}
                   className="py-8 text-center text-xs text-muted-foreground"
                 >
-                  Sin resultados para ese filtro.
+                  {t("logs.empty")}
                 </TableCell>
               </TableRow>
             )}
@@ -345,33 +354,32 @@ type Msg = {
   actions?: string[];
 };
 
-const INITIAL_MSGS: Msg[] = [
-  {
-    id: 1,
-    role: "agent",
-    text: "Hola, soy el agente VXCore. Detecté que oxmysql perdió la conexión 2 veces en la última hora. ¿Quieres que revise la config de la base de datos?",
-    actions: ["Revisar config", "Ver logs"],
-  },
-  {
-    id: 2,
-    role: "user",
-    text: "Sí, ¿qué puedo hacer para evitar que se caiga?",
-  },
-];
-
-function agentReply(question: string): string {
+function agentReply(t: ShowcaseT, question: string): string {
   const q = question.toLowerCase();
   if (q.includes("config") || q.includes("mysql") || q.includes("base"))
-    return "El problema suele ser max_connections. Te recomiendo subirlo a 200 y añadir un healthcheck cada 30s. He preparado el cambio en el editor — puedes revisarlo antes de guardar.";
+    return t("agent.replyConfig");
   if (q.includes("crash") || q.includes("error"))
-    return "He analizado los logs: el crash viene de un recurso que accede a la BD sin reintentos. Puedo envolver esa llamada con un retry automático (con copia de seguridad incluida).";
+    return t("agent.replyCrash");
   if (q.includes("restart") || q.includes("servidor"))
-    return "Puedo programar un reinicio nocturno a las 04:00 con aviso en el Discord de tu comunidad. ¿Lo activo?";
-  return "He revisado el estado del servidor: todo en orden. ¿Quieres que mire un recurso, los logs o te prepare una automatización?";
+    return t("agent.replyRestart");
+  return t("agent.replyDefault");
 }
 
-function AgentWidget() {
-  const [msgs, setMsgs] = React.useState<Msg[]>(INITIAL_MSGS);
+function AgentWidget({ t }: { t: ShowcaseT }) {
+  const initial1Actions = t.raw("agent.initial1Actions") as string[];
+  const [msgs, setMsgs] = React.useState<Msg[]>([
+    {
+      id: 1,
+      role: "agent",
+      text: t("agent.initial1"),
+      actions: initial1Actions,
+    },
+    {
+      id: 2,
+      role: "user",
+      text: t("agent.initial2"),
+    },
+  ]);
   const [input, setInput] = React.useState("");
   const idRef = React.useRef(10);
   const listRef = React.useRef<HTMLDivElement>(null);
@@ -396,10 +404,8 @@ function AgentWidget() {
       const isEdit = text.toLowerCase().includes("aplicar");
       push({
         role: "agent",
-        text: isEdit
-          ? "Listo: el cambio está guardado con una copia de seguridad. Puedes revertirlo desde el editor en cualquier momento."
-          : agentReply(text),
-        actions: ["Aplicar con copia", "Ver diff"],
+        text: isEdit ? t("agent.applied") : agentReply(t, text),
+        actions: t.raw("agent.applyActions") as string[],
       });
     }, 420);
   };
@@ -412,14 +418,14 @@ function AgentWidget() {
           <Bot className="size-4" />
         </span>
         <div>
-          <div className="text-xs font-semibold">Agente VXCore</div>
+          <div className="text-xs font-semibold">{t("agent.name")}</div>
           <div className="flex items-center gap-1 text-[10px] text-foreground/60">
             <span className="size-1.5 rounded-full bg-emerald-500" />
-            conectado a tu servidor
+            {t("agent.connected")}
           </div>
         </div>
         <span className="ml-auto text-[10px] text-muted-foreground">
-          solo lectura · tú decides
+          {t("agent.readOnly")}
         </span>
       </div>
 
@@ -472,11 +478,11 @@ function AgentWidget() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Pregúntale al agente…"
-          aria-label="Pregunta al agente"
+          placeholder={t("agent.placeholder")}
+          aria-label={t("agent.askAria")}
           className="h-8 bg-background text-xs"
         />
-        <Button size="icon" onClick={() => send()} aria-label="Enviar mensaje" className="size-8 shrink-0">
+        <Button size="icon" onClick={() => send()} aria-label={t("agent.sendAria")} className="size-8 shrink-0">
           <Send className="size-3.5" />
         </Button>
       </div>
@@ -488,52 +494,37 @@ function AgentWidget() {
 /* Sección                                                             */
 /* ------------------------------------------------------------------ */
 
-const TABS = [
-  {
-    value: "console",
-    label: "Consola RCON",
-    Icon: Terminal,
-    headline: "Control total de tu servidor, en tiempo real",
-    copy: "Una terminal bidireccional que conecta tu navegador con el FXServer por WebSocket. Lo que haces se ve al instante, sin recargar la página.",
-    points: [
-      "WebSocket bidireccional — comandos y salida en vivo",
-      "Acciones rápidas — refresh, status, restart, ensure…",
-      "Historial de comandos navegable con las flechas ↕",
-      "Control de acceso: solo tú y tu equipo ejecutan",
-    ],
-    widget: <ConsoleWidget />,
-  },
-  {
-    value: "logs",
-    label: "Logs globales",
-    Icon: FileCode2,
-    headline: "Nunca más administres a ciegas",
-    copy: "VXCore captura toda la salida de tu servidor, la organiza y te la presenta filtrable. Encuentra el error que te quita el sueño en segundos.",
-    points: [
-      "Filtros por nivel con contadores en vivo",
-      "Búsqueda instantánea por recurso o texto",
-      "Histórico en disco: consulta días atrás",
-      "El agente te explica qué falla y cómo arreglarlo",
-    ],
-    widget: <LogsWidget />,
-  },
-  {
-    value: "agent",
-    label: "Agente IA",
-    Icon: Bot,
-    headline: "Un copiloto dentro de tu servidor",
-    copy: "El agente VXCore entiende tu servidor: lee recursos, detecta problemas y propone cambios. Tú decides siempre qué se aplica.",
-    points: [
-      "Lee y edita recursos — fxmanifest, scripts, configs",
-      "Explica cualquier cosa: qué hace o por qué falla",
-      "Nada se escribe en producción sin tu permiso",
-      "Siempre queda una copia para revertir",
-    ],
-    widget: <AgentWidget />,
-  },
-];
+type TabMeta = {
+  label: string;
+  headline: string;
+  copy: string;
+  points: string[];
+};
 
 export function Showcase() {
+  const t = useTranslations("showcase");
+
+  const tabs = [
+    {
+      value: "console",
+      Icon: Terminal,
+      meta: t.raw("console") as TabMeta,
+      widget: <ConsoleWidget t={t} />,
+    },
+    {
+      value: "logs",
+      Icon: FileCode2,
+      meta: t.raw("logs") as TabMeta,
+      widget: <LogsWidget t={t} />,
+    },
+    {
+      value: "agent",
+      Icon: Bot,
+      meta: t.raw("agent") as TabMeta,
+      widget: <AgentWidget t={t} />,
+    },
+  ];
+
   return (
     <section
       id="product"
@@ -541,42 +532,42 @@ export function Showcase() {
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="Producto"
+          eyebrow={t("eyebrow")}
           title={
             <>
-              Un panel. <span className="text-gradient">Todo tu servidor.</span>
+              {t("title1")} <span className="text-gradient">{t("titleAccent")}</span>
             </>
           }
-          description="Descubre lo que hace VXCore por tu servidor FXServer, minuto a minuto. Prueba los módulos de abajo: son interactivos."
+          description={t("description")}
         />
 
         <Tabs defaultValue="console" className="mt-12">
           <TabsList className="mx-auto flex h-11 w-fit max-w-full overflow-x-auto rounded-full bg-background/80 p-1 ring-1 ring-border backdrop-blur-sm dark:bg-white/[0.04]">
-            {TABS.map(({ value, label, Icon }) => (
+            {tabs.map(({ value, meta, Icon }) => (
               <TabsTrigger
                 key={value}
                 value={value}
                 className="gap-2 rounded-full px-4 py-2 text-sm data-active:bg-foreground! data-active:text-background!"
               >
                 <Icon className="size-4" />
-                {label}
+                {meta.label}
               </TabsTrigger>
             ))}
           </TabsList>
 
           <div className="mt-10">
-            {TABS.map(({ value, headline, copy, points, widget }) => (
+            {tabs.map(({ value, meta, widget }) => (
               <TabsContent key={value} value={value}>
                 <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]">
                   <div>
                     <h3 className="text-balance font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-                      {headline}
+                      {meta.headline}
                     </h3>
                     <p className="mt-3 max-w-md text-pretty leading-relaxed text-muted-foreground">
-                      {copy}
+                      {meta.copy}
                     </p>
                     <ul className="mt-6 space-y-2.5">
-                      {points.map((point) => (
+                      {meta.points.map((point) => (
                         <li key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
                           <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-foreground">
                             <Check className="size-3" />

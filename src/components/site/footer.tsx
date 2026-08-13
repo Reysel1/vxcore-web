@@ -1,28 +1,14 @@
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/site/logo";
+import { Link } from "@/i18n/navigation";
 import {
-  LEGAL_LINKS,
+  LEGAL_ROUTES,
   SOCIAL_LINKS,
   URANTIX_STORE_URL,
   type SocialIconName,
 } from "@/lib/site";
-
-const COLUMNS = [
-  {
-    title: "Producto",
-    links: ["Consola RCON", "Logs globales", "Agente IA", "Editor", "Automatizaciones"],
-  },
-  {
-    title: "Tienda",
-    links: ["Marketplace", "Recursos", "Scripts", "Configuraciones", "Soporte"],
-  },
-  {
-    title: "Recursos",
-    links: ["Documentación", "Guías de inicio", "API", "Comunidad", "Estado"],
-  },
-];
 
 /**
  * Iconos de marca. X y TikTok van rellenos (`fill`) porque sus logos son
@@ -77,7 +63,14 @@ function SocialIcon({ name }: { name: SocialIconName }) {
   );
 }
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("footer");
+  const legal = await getTranslations("legal.nav");
+  const columns = t.raw("columns") as {
+    title: string;
+    links: string[];
+  }[];
+
   return (
     <footer className="relative overflow-hidden border-t border-border/60 bg-muted/30">
       {/* Top hairline */}
@@ -100,17 +93,16 @@ export function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              El sistema operativo de tu servidor FXServer. Gestiona, monitoriza
-              y automatiza desde un solo panel.
+              {t("description")}
             </p>
             <a
               href={URANTIX_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Visita la tienda de Urantix (se abre en una pestaña nueva)"
+              aria-label={t("storeAria")}
               className="group mt-5 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
-              Visita la tienda de Urantix
+              {t("visitStore")}
               <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
             <div className="mt-6 flex gap-2">
@@ -120,7 +112,7 @@ export function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`VXCore en ${social.name} (se abre en una pestaña nueva)`}
+                  aria-label={t("socialAria", { name: social.name })}
                   className="flex size-9 items-center justify-center rounded-lg border border-border bg-background/50 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground dark:bg-white/[0.03]"
                 >
                   <SocialIcon name={social.icon} />
@@ -130,18 +122,29 @@ export function Footer() {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-            {COLUMNS.map((col) => (
+            {columns.map((col, colIndex) => (
               <div key={col.title}>
                 <h4 className="text-sm font-semibold">{col.title}</h4>
                 <ul className="mt-4 space-y-2.5">
-                  {col.links.map((link) => (
+                  {col.links.map((link, linkIndex) => (
                     <li key={link}>
-                      <a
-                        href="#top"
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </a>
+                      {/* La primera entrada de "Recursos" (Documentación) es la
+                          única del pie que lleva a una página real. */}
+                      {colIndex === 2 && linkIndex === 0 ? (
+                        <Link
+                          href="/docs"
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {link}
+                        </Link>
+                      ) : (
+                        <a
+                          href="#top"
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {link}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -151,15 +154,19 @@ export function Footer() {
             {/* Legal va aparte: son las únicas del pie que llevan a páginas
                 reales, no a anclas de la propia portada. */}
             <div>
-              <h4 className="text-sm font-semibold">Legal</h4>
+              <h4 className="text-sm font-semibold">{t("legal")}</h4>
               <ul className="mt-4 space-y-2.5">
-                {LEGAL_LINKS.map((link) => (
-                  <li key={link.href}>
+                {LEGAL_ROUTES.map((route) => (
+                  <li key={route.href}>
                     <Link
-                      href={link.href}
+                      href={route.href}
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      {link.label}
+                      {route.href === "/terminos"
+                        ? legal("terms")
+                        : route.href === "/privacidad"
+                          ? legal("privacy")
+                          : legal("cookies")}
                     </Link>
                   </li>
                 ))}
@@ -170,12 +177,10 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} VXCore · Un producto de Urantix. Todos
-            los derechos reservados.
+            {t("rights", { year: new Date().getFullYear() })}
           </p>
           <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            Hecho con <span className="text-rose-500">❤️</span> para la
-            comunidad FiveM
+            {t("madeWith")}
           </p>
         </div>
       </div>
