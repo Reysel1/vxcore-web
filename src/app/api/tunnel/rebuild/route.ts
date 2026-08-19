@@ -112,16 +112,21 @@ export async function POST(req: NextRequest) {
   const licenseKey = String(license.license_key);
 
   // Mismo control que al aprovisionar: una licencia activa no da derecho a
-  // tirarle el túnel a la instalación de otro cliente.
+  // tirarle el túnel a la instalación de otro cliente. Aquí el daño no es
+  // llevarse el enlace sino dejar al vecino sin él —esto borra túnel, DNS y
+  // fila—, que para quien lo sufre es lo mismo: su panel deja de responder y
+  // no ha tocado nada.
   const owner = getInstallationOwner(installationId);
-  if (owner && String(owner.license_key).toLowerCase() !== licenseKey.toLowerCase()) {
+  const existing = getTunnel(installationId);
+
+  const authority = owner?.license_key ?? existing?.license_key;
+  if (authority && String(authority).toLowerCase() !== licenseKey.toLowerCase()) {
     return NextResponse.json(
       { error: "Esta instalación pertenece a otra licencia" },
       { status: 403 }
     );
   }
 
-  const existing = getTunnel(installationId);
   if (!existing) {
     // Nada que rehacer: la siguiente petición ya iba a crear uno. No es un
     // error — el usuario pidió «déjame uno nuevo» y eso es lo que va a tener.

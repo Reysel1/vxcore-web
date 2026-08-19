@@ -210,9 +210,38 @@ export async function POST(req: NextRequest) {
   const licenseKey = String(license.license_key);
 
   try {
+    // De quién es este equipo. Se comprueba ANTES de tocar nada suyo, y ese
+    // orden es la corrección: la respuesta idempotente iba primero, así que
+    // bastaba con nombrar el installationId de otro cliente para que este
+    // endpoint devolviera su `tunnelSecret`. Y el installationId no es
+    // ningún secreto — es su propio subdominio, lo conoce cualquiera a quien
+    // le haya pasado el enlace de su panel, empezando por su propio staff.
+    // Con ese secreto se levanta SU túnel desde otra máquina: a partir de ahí
+    // Cloudflare reparte el tráfico de su panel entre las dos, y el que
+    // conteste recibe las sesiones de sus colaboradores.
+    //
+    // Manda la fila de la instalación: dice a qué licencia responde ese equipo
+    // HOY, y reasignarla ya está controlado en `touchInstallation`. La del
+    // túnel sólo entra cuando no hay instalación registrada, para que una fila
+    // de túnel suelta no quede sin dueño y la conteste cualquiera.
+    //
+    // Y en ese orden, no exigiendo las dos: la licencia del túnel es la de
+    // cuando se creó, así que quien renueva con una clave nueva acabaría sin
+    // poder pedir su propio túnel — el mismo cliente, la misma máquina, la
+    // puerta cerrada por una fila vieja.
+    const owner = getInstallationOwner(installationId);
+    const existing = getTunnel(installationId);
+
+    const authority = owner?.license_key ?? existing?.license_key;
+    if (authority && String(authority).toLowerCase() !== licenseKey.toLowerCase()) {
+      return NextResponse.json(
+        { error: "Esta instalación pertenece a otra licencia" },
+        { status: 403 }
+      );
+    }
+
     // Idempotencia: si ya tiene túnel, se devuelve el mismo. Crear otro dejaría
     // el anterior colgando en la cuenta y el DNS apuntando al que ya no se usa.
-    const existing = getTunnel(installationId);
     if (existing) {
       return NextResponse.json({
         hostname: String(existing.hostname),
@@ -220,17 +249,6 @@ export async function POST(req: NextRequest) {
         accountTag: env("CF_ACCOUNT_ID"),
         tunnelSecret: String(existing.tunnel_secret),
       });
-    }
-
-    // Un equipo pertenece a la licencia con la que se validó. Sin esto,
-    // cualquiera con una licencia activa podría pedir el túnel de la
-    // instalación de otro cliente y quedarse con su enlace.
-    const owner = getInstallationOwner(installationId);
-    if (owner && String(owner.license_key).toLowerCase() !== licenseKey.toLowerCase()) {
-      return NextResponse.json(
-        { error: "Esta instalación pertenece a otra licencia" },
-        { status: 403 }
-      );
     }
 
     const hostname = `${installationId}.${env("VX_TUNNEL_DOMAIN")}`;

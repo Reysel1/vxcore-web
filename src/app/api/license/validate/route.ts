@@ -57,11 +57,22 @@ export async function POST(req: NextRequest) {
   // arrancar por no poder anotar estadísticas sería absurdo.
   if (typeof installationId === "string" && INSTALLATION_ID_RE.test(installationId)) {
     try {
-      touchInstallation({
+      const result = touchInstallation({
         id: installationId,
         licenseKey: String(row.license_key),
         name: typeof installationName === "string" ? installationName.slice(0, 60) : null,
       });
+
+      // El equipo ya es de otro cliente y no se le reasigna. No cambia la
+      // respuesta —su clave es válida y lo sigue siendo— pero queda anotado:
+      // si no es un intento de quedarse con la instalación de otro, es alguien
+      // que restauró un backup ajeno o clonó una máquina entera, y las tres
+      // cosas se ven igual desde aquí.
+      if (result === "rejected") {
+        console.warn(
+          `[license] ${installationId} responde a otra licencia; no se reasigna a ${row.license_key}.`
+        );
+      }
     } catch (err) {
       console.error("[license] no se pudo registrar la instalación:", err);
     }

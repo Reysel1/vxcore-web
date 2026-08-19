@@ -539,22 +539,75 @@ export function setLicenseStatus(id: number, status: "active" | "revoked"): void
  * Se llama desde la validación de licencia, que el agente repite cada 10 min.
  * Si el equipo cambia de clave (el dueño reactiva con otra licencia), la fila
  * se reasigna: la instalación es el equipo, no la compra.
+ *
+ * Esa reasignación estaba sin condiciones, y era una puerta abierta: el
+ * installationId llega en el cuerpo de una petición que sólo exige *una*
+ * licencia activa, no la del equipo. Cualquier cliente podía nombrar el id de
+ * otro —lo lleva escrito el subdominio de su panel— y quedarse con su fila.
+ * Al hacerlo no le robaba nada visible, le rompía el acceso remoto: a partir
+ * de ahí el agente del dueño pedía su propio túnel y la nube le respondía
+ * "esta instalación pertenece a otra licencia", para siempre y sin que nada en
+ * su pantalla relacionara el fallo con alguien de fuera.
+ *
+ * Así que el equipo cambia de licencia sólo cuando el cambio es del dueño:
+ *  - nadie lo reclamaba todavía;
+ *  - es la misma licencia de siempre;
+ *  - es otra compra del mismo cliente (mismo email);
+ *  - o la licencia anterior ya no está activa, que es el caso de renovar
+ *    después de que caducara.
+ * Fuera de eso se conserva el dueño y se devuelve 'rejected'. La validación de
+ * la clave no depende de esto: quien llama sigue teniendo su licencia buena,
+ * simplemente no se le apunta el equipo de otro.
  */
 export function touchInstallation(input: {
   id: string;
   licenseKey: string;
   name?: string | null;
-}): void {
-  getDb()
-    .prepare(
-      `INSERT INTO installations (id, license_key, name)
+}): "created" | "updated" | "rejected" {
+  const db = getDb();
+  const current = db
+    .prepare("SELECT license_key FROM installations WHERE id = ?")
+    .get(String(input.id).trim()) as Row | undefined;
+
+  if (current && String(current.license_key).toLowerCase() !== input.licenseKey.toLowerCase()) {
+    if (!canReassignInstallation(String(current.license_key), input.licenseKey)) {
+      // Ni siquiera se refresca `last_seen`: el que pregunta no es su dueño y
+      // no tiene por qué poder decir cuándo se vio ese equipo por última vez.
+      return "rejected";
+    }
+  }
+
+  db.prepare(
+    `INSERT INTO installations (id, license_key, name)
        VALUES (?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          license_key = excluded.license_key,
          name = COALESCE(excluded.name, installations.name),
          last_seen = datetime('now')`
-    )
-    .run(input.id, input.licenseKey, input.name?.trim() || null);
+  ).run(input.id, input.licenseKey, input.name?.trim() || null);
+
+  return current ? "updated" : "created";
+}
+
+/**
+ * ¿Puede `nextKey` quedarse con un equipo que hoy es de `currentKey`?
+ *
+ * Sí cuando es el mismo cliente comprando otra vez, y sí cuando la licencia
+ * anterior ya no vale — si no, quien renueve después de que se le caduque una
+ * se quedaría sin poder reutilizar su propio equipo. En cualquier otro caso,
+ * no: dos licencias activas de dos personas distintas son dos clientes
+ * distintos.
+ */
+function canReassignInstallation(currentKey: string, nextKey: string): boolean {
+  const current = getLicenseByKey(currentKey);
+  if (!current) return true;
+  if (String(current.status) !== "active") return true;
+
+  const next = getLicenseByKey(nextKey);
+  const currentEmail = String(current.user_email ?? "").trim().toLowerCase();
+  const nextEmail = String(next?.user_email ?? "").trim().toLowerCase();
+
+  return Boolean(currentEmail) && currentEmail === nextEmail;
 }
 
 /** Equipos de una licencia, del más recientemente visto al más antiguo. */
